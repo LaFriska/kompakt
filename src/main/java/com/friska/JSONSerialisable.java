@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Classes implementing this interface allows the library to search through field variables and serialise them into a
+ * Classes implementing this interface allows Kompakt to search through field variables and serialise them into a
  * JSON string. This process is done by calling {@link JSONSerialisable#serialise()}. The programme will interpret the
  * variables at its own discretion, for more control over the serialisation process, classes should instead extend
- * {@link JSONSerialiser}.
+ * {@link JSONSerialiser}. This interface does however, provide control over which field variables may be omitted.
+ * To do so, override {@link JSONSerialisable#ignoredFields()} and return a string of ignored field names.
  */
 public interface JSONSerialisable {
 
@@ -29,10 +30,24 @@ public interface JSONSerialisable {
         return null;
     }
 
+    /**
+     * Serialises the object. Note that this method will only serialise fields declared in the class itself, not
+     * inherited ones. Any fields that has the form of an array of objects will be serialised as a JSON array.
+     * Primitive number types, or any fields that inherit {@link Number} will be serialised as a JSON number, and
+     * booleans will be serialised as a JSON boolean. Any other form of objects will be serialised as strings by
+     * calling {@link Object#toString()}. This method is recursive in nature, and note that any circular dependency
+     * of fields may cause non-termination.
+     * @return a JSON-string representation of the object.
+     */
     default String serialise(){
         return serialise(0, ignoredFields());
     }
 
+    /**
+     * Helper method for {@link JSONSerialisable#serialise()} used in the recursive calls.
+     * @param currSize the indentation to be used in the current depth level.
+     * @param omitted an omitted set of field names.
+     * */
     default String serialise(int currSize, String[] omitted){
         try {
             HashSet<String> omittedFields = omitted == null ?
