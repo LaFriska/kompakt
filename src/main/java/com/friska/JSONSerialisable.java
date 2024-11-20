@@ -1,0 +1,103 @@
+package com.friska;
+
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Classes implementing this interface allows the library to search through field variables and serialise them into a
+ * JSON string. This process is done by calling {@link JSONSerialisable#serialise()}. The programme will interpret the
+ * variables at its own discretion, for more control over the serialisation process, classes should instead extend
+ * {@link JSONSerialiser}.
+ */
+public interface JSONSerialisable {
+
+    /**
+     * The size of indentation in the resulting JSON string.
+     */
+    int INDENT_SIZE = 4;
+
+    /**
+     * By default, every field regardless of visibility or other tags is included in the serialisation process. To
+     * explicitly omit certain field variables, this method should be overwritten returning an array of strings
+     * representing names of field variables that should be omitted. Return null to dictate that no fields should be
+     * ignored (all fields are included in the JSON serialisation process).
+     * @return an array of field variables that should be ignored by the serialisation process.
+     */
+    default String[] ignoredFields(){
+        return null;
+    }
+
+    default String serialise(){
+        return serialise(0, ignoredFields());
+    }
+
+    default String serialise(int currSize, String[] omitted){
+        try {
+            HashSet<String> omittedFields = omitted == null ?
+                    new HashSet<>() :
+                    new HashSet<>(List.of(omitted));
+            return serialise(this, currSize, omittedFields);
+        }catch (IllegalAccessException e){
+            e.printStackTrace();
+            throw new RuntimeException("An issue occurred on serialising an object to JSON.");
+        }
+    }
+
+    private static <T extends JSONSerialisable> String serialise(T obj, int currSize, Set<String> omitted)
+                                                                                throws IllegalAccessException {
+        Field[] fields = obj.getClass().getDeclaredFields();
+        StringBuilder sb = new StringBuilder();
+        indent(sb, currSize);
+        sb.append("{").append("\n");
+        for (Field field : fields) {
+            if(!omitted.contains(field.getName())){
+                boolean canAccess = field.canAccess(obj);
+                field.setAccessible(true);
+                Object item = field.get(obj);
+                indent(sb, currSize + INDENT_SIZE);
+                sb.append(wrap(field.getName())).append(": ");
+                serialiseItem(currSize, item, sb);
+                field.setAccessible(canAccess);
+            }
+        }
+        indent(sb, currSize);
+        sb.append("}");
+        return null;
+    }
+
+    private static void serialiseItem(int currSize, Object item, StringBuilder sb) {
+        //Recursive call
+        if(item instanceof JSONSerialisable serialisable)
+            sb.append(serialisable.serialise(currSize + INDENT_SIZE, serialisable.ignoredFields()))
+              .append("\n");
+
+        //Base cases
+        else if(item == null)
+            sb.append("null");
+        else if(item instanceof Number || item instanceof Boolean)
+            sb.append(item);
+        else if(item.getClass().isArray()){
+            sb.append("[").append("\n");
+            Object[] array = (Object[]) item;
+            for (Object o : array) {
+                serialiseItem(currSize + INDENT_SIZE, o, sb);
+            }
+            sb.append("]");
+        }
+        else
+            sb.append(wrap(item.toString()));
+
+        sb.append(",\n");
+    }
+
+    private static void indent(StringBuilder sb, int indentSize){
+        sb.append(" ".repeat(Math.max(0, indentSize)));
+    }
+
+    private static String wrap(String str){
+        return "\"" + str + "\"";
+    }
+
+}
