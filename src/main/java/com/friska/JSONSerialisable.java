@@ -16,7 +16,7 @@ public interface JSONSerialisable {
     /**
      * The size of indentation in the resulting JSON string.
      */
-    int INDENT_SIZE = 4;
+    int INDENT_SIZE = 2;
 
     /**
      * By default, every field regardless of visibility or other tags is included in the serialisation process. To
@@ -59,19 +59,21 @@ public interface JSONSerialisable {
                 indent(sb, currSize + INDENT_SIZE);
                 sb.append(wrap(field.getName())).append(": ");
                 serialiseItem(currSize, item, sb);
+                sb.append(",").append("\n");
                 field.setAccessible(canAccess);
             }
         }
+        if(sb.charAt(sb.length() - 2) == ',')
+            sb.delete(sb.length() - 2, sb.length() - 1);
         indent(sb, currSize);
         sb.append("}");
-        return null;
+        return sb.toString();
     }
 
     private static void serialiseItem(int currSize, Object item, StringBuilder sb) {
         //Recursive call
         if(item instanceof JSONSerialisable serialisable)
-            sb.append(serialisable.serialise(currSize + INDENT_SIZE, serialisable.ignoredFields()))
-              .append("\n");
+            sb.append(serialisable.serialise(currSize + INDENT_SIZE, serialisable.ignoredFields()));
 
         //Base cases
         else if(item == null)
@@ -81,15 +83,16 @@ public interface JSONSerialisable {
         else if(item.getClass().isArray()){
             sb.append("[").append("\n");
             Object[] array = (Object[]) item;
-            for (Object o : array) {
-                serialiseItem(currSize + INDENT_SIZE, o, sb);
+            for (int i = 0; i < array.length; i++) {
+                serialiseItem(currSize + INDENT_SIZE, array[i], sb);
+                if(i != array.length - 1) sb.append(",");
+                sb.append("\n");
             }
+            indent(sb, currSize + INDENT_SIZE);
             sb.append("]");
         }
         else
             sb.append(wrap(item.toString()));
-
-        sb.append(",\n");
     }
 
     private static void indent(StringBuilder sb, int indentSize){
