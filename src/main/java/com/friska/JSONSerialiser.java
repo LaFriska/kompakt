@@ -1,4 +1,7 @@
 package com.friska;
 
-public class JSONSerialiser { //TODO
+public abstract class JSONSerialiser {
+
+    
+
 }
