@@ -7,10 +7,14 @@ package com.friska;
  */
 public class Kompakt {
 
-    protected static int JSON_INDENT_SIZE = 4;
+    private static int JSON_INDENT_SIZE = 4;
 
     public static void setJsonIndentSize(int size) {
         JSON_INDENT_SIZE = size;
+    }
+
+    protected static int getJsonIndentSize(){
+        return JSON_INDENT_SIZE;
     }
 
 }
