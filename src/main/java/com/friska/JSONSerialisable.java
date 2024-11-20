@@ -1,9 +1,12 @@
 package com.friska;
 
+import java.lang.reflect.AccessFlag;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static com.friska.JSONSettings.*;
 
 /**
  * Classes implementing this interface allows Kompakt to search through field variables and serialise them into a
@@ -15,9 +18,12 @@ import java.util.Set;
 public interface JSONSerialisable {
 
     /**
-     * The size of indentation in the resulting JSON string.
+     * Sets a new indentation size for JSON serialisations.
+     * @param newSize the number of spaces for each indentation.
      */
-    int INDENT_SIZE = 2;
+    static void setIndentSize(int newSize){
+        INDENT_SIZE = newSize;
+    }
 
     /**
      * By default, every field regardless of visibility or other tags is included in the serialisation process. To
@@ -66,8 +72,9 @@ public interface JSONSerialisable {
         StringBuilder sb = new StringBuilder();
         indent(sb, currSize);
         sb.append("{").append("\n");
+
         for (Field field : fields) {
-            if(!omitted.contains(field.getName())){
+            if(!omitted.contains(field.getName()) && !field.accessFlags().contains(AccessFlag.STATIC)){
                 boolean canAccess = field.canAccess(obj);
                 field.setAccessible(true);
                 Object item = field.get(obj);
@@ -78,6 +85,7 @@ public interface JSONSerialisable {
                 field.setAccessible(canAccess);
             }
         }
+
         if(sb.charAt(sb.length() - 2) == ',')
             sb.delete(sb.length() - 2, sb.length() - 1);
         indent(sb, currSize);
