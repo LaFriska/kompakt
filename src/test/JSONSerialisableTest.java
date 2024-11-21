@@ -245,6 +245,211 @@ public class JSONSerialisableTest {
     }
 
 
+    /**
+     * Tests contrived and complicated object nesting.
+     */
+    @Test
+    public void testContrived(){
+        ContrivedTree<String> t1 = new ContrivedTree<>(null, "Cat", null);
+        ContrivedTree<String> t2 = new ContrivedTree<>(null, "Dog", null);
+        ContrivedTree<Boolean> t3 = new ContrivedTree<>(t1, true, t2);
+        ContrivedTree<Boolean> t4 = new ContrivedTree<>(t1, true,
+                new ContrivedTree<>(null, "Dog",
+                        new ContrivedTree<>(null, 0.5,
+                                new ContrivedTree<>(null, null, null))));
+
+        ContrivedTree<ContrivedTree<ContrivedTree<Integer>>> t5 = new ContrivedTree<>(
+                new ContrivedTree<>(
+                        new ContrivedTree<>(null, 1, null),
+                        new ContrivedTree<>(null, 2, null),
+                        new ContrivedTree<>(null, 3, null)
+                ),
+                new ContrivedTree<>(
+                        new ContrivedTree<>(null, 4, null),
+                        new ContrivedTree<>(null, 5, null),
+                        new ContrivedTree<>(null, 6, null)
+                ),
+                new ContrivedTree<>(
+                        new ContrivedTree<>(null, 7, null),
+                        new ContrivedTree<>(null, 8, null),
+                        new ContrivedTree<>(null, 9, null)
+                )
+        );
+
+        ContrivedTree<ContrivedTree<Object[]>> t6 = new ContrivedTree<>(
+                new ContrivedTree<>(
+                        new ContrivedTree<>(null, null, null),
+                        new ContrivedTree<>(null, new Object[]{"Cat", "Dog", 1, 2, 3}, null),
+                        new ContrivedTree<>(null, null, null)
+                ),
+                new ContrivedTree<>(
+                        new ContrivedTree<>(
+                                null,
+                                new Object[]{'A', "B", true, false, new Object[]{"Cat", "Dog",
+                                        new ContrivedTree<>(null, null, null)}},
+                                null
+                        ),
+                        null,
+                        null
+                ),
+                null
+        );
+
+
+        String s1 = """
+                {
+                  "left": null,
+                  "node": "Cat",
+                  "right": null
+                }
+                """;
+        String s2 = """
+                {
+                  "left": null,
+                  "node": "Dog",
+                  "right": null
+                }
+                """;
+        String s3 = """
+                {
+                  "left": {
+                    "left": null,
+                    "node": "Cat",
+                    "right": null
+                  },
+                  "node": true,
+                  "right": {
+                    "left": null,
+                    "node": "Dog",
+                    "right": null
+                  }
+                }
+                """;
+
+        String s4 = """
+                {
+                  "left": {
+                    "left": null,
+                    "node": "Cat",
+                    "right": null
+                  },
+                  "node": true,
+                  "right": {
+                    "left": null,
+                    "node": "Dog",
+                    "right": {
+                      "left": null,
+                      "node": 0.5,
+                      "right": {
+                        "left": null,
+                        "node": null,
+                        "right": null
+                      }
+                    }
+                  }
+                }
+                """;
+
+        String s5 = """
+                {
+                  "left": {
+                    "left": {
+                      "left": null,
+                      "node": 1,
+                      "right": null
+                    },
+                    "node": {
+                      "left": null,
+                      "node": 2,
+                      "right": null
+                    },
+                    "right": {
+                      "left": null,
+                      "node": 3,
+                      "right": null
+                    }
+                  },
+                  "node": {
+                    "left": {
+                      "left": null,
+                      "node": 4,
+                      "right": null
+                    },
+                    "node": {
+                      "left": null,
+                      "node": 5,
+                      "right": null
+                    },
+                    "right": {
+                      "left": null,
+                      "node": 6,
+                      "right": null
+                    }
+                  },
+                  "right": {
+                    "left": {
+                      "left": null,
+                      "node": 7,
+                      "right": null
+                    },
+                    "node": {
+                      "left": null,
+                      "node": 8,
+                      "right": null
+                    },
+                    "right": {
+                      "left": null,
+                      "node": 9,
+                      "right": null
+                    }
+                  }
+                }
+                """;
+
+        String s6 = """
+                {
+                  "left": {
+                    "left": {
+                      "left": null,
+                      "node": null,
+                      "right": null
+                    },
+                    "node": {
+                      "left": null,
+                      "node": ["Cat", "Dog", 1, 2, 3],
+                      "right": null
+                    },
+                    "right": {
+                      "left": null,
+                      "node": null,
+                      "right": null
+                    }
+                  },
+                  "node": {
+                    "left": {
+                      "left": null,
+                      "node": ["A", "B", true, false, ["Cat", "Dog", {
+                        "left": null,
+                        "node": null,
+                        "right": null
+                      }]],
+                      "right": null
+                    },
+                    "node": null,
+                    "right": null
+                  },
+                  "right": null
+                }
+                """;
+
+        JSONSerialisable[] objects = new JSONSerialisable[]{t1, t2, t3, t4, t5, t6};
+        String[] expectedStrings = new String[]{s1, s2, s3, s4, s5, s6};
+
+        for (int i = 0; i < expectedStrings.length; i++)
+            testClean(expectedStrings[i], objects[i]);
+    }
+
+
     public <T extends JSONSerialisable> void testClean(String expected, T obj){
         assertEquals(Utils.strip(expected), Utils.strip(obj.serialise()));
     }
@@ -286,5 +491,7 @@ public class JSONSerialisableTest {
     record Book(String title, int year, String author) implements JSONSerialisable{}
 
     record BookShelf(String category, Book[] books) implements JSONSerialisable{}
+
+    record ContrivedTree<T>(ContrivedTree<?> left, T node, ContrivedTree<?> right) implements JSONSerialisable{}
 
 }
