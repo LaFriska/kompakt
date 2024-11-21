@@ -146,6 +146,105 @@ public class JSONSerialisableTest {
 
     }
 
+    /**
+     * Tests complex scenarios with objects nested in one another.
+     */
+    @Test
+    public void testComplicated() {
+
+        SimplePerson parent = new SimplePerson("Alice", 45, 165.0F, 65.0F, false);
+        SimplePerson child1 = new SimplePerson("Bob", 20, 175.5F, 70.2F, false);
+        SimplePerson child2 = new SimplePerson("Charlie", 18, 180.3F, 75.5F, false);
+
+        Family family = new Family(
+                parent,
+                new SimplePerson[]{child1, child2},
+                "Smith"
+        );
+
+        BookShelf fantasyShelf = new BookShelf("fantasy", new Book[]{
+                new Book("The Hobbit", 1937, "J.R.R. Tolkien"),
+                new Book("Harry Potter", 1997, "J.K. Rowling")
+        });
+
+        BookShelf scienceShelf = new BookShelf("science", new Book[]{
+                new Book("A Brief History of Time", 1988, "Stephen Hawking"),
+                new Book("The Selfish Gene", 1976, "Richard Dawkins")
+        });
+
+        Library library = new Library(new BookShelf[]{fantasyShelf, scienceShelf});
+
+        String familyExpected = """
+            {
+              "parent": {
+                "name": "Alice",
+                "age": 45,
+                "height": 165.0,
+                "weight": 65.0,
+                "isDeceased": false
+              },
+              "children": [
+                {
+                  "name": "Bob",
+                  "age": 20,
+                  "height": 175.5,
+                  "weight": 70.2,
+                  "isDeceased": false
+                },
+                {
+                  "name": "Charlie",
+                  "age": 18,
+                  "height": 180.3,
+                  "weight": 75.5,
+                  "isDeceased": false
+                }
+              ],
+              "familyName": "Smith"
+            }
+            """;
+
+        String libraryExpected = """
+            {
+              "shelves": [
+                {
+                  "category": "fantasy",
+                  "books": [
+                    {
+                      "title": "The Hobbit",
+                      "year": 1937,
+                      "author": "J.R.R. Tolkien"
+                    },
+                    {
+                      "title": "Harry Potter",
+                      "year": 1997,
+                      "author": "J.K. Rowling"
+                    }
+                  ]
+                },
+                {
+                  "category": "science",
+                  "books": [
+                    {
+                      "title": "A Brief History of Time",
+                      "year": 1988,
+                      "author": "Stephen Hawking"
+                    },
+                    {
+                      "title": "The Selfish Gene",
+                      "year": 1976,
+                      "author": "Richard Dawkins"
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        testClean(libraryExpected, library);
+        testClean(familyExpected, family);
+    }
+
+
     public <T extends JSONSerialisable> void testClean(String expected, T obj){
         assertEquals(Utils.strip(expected), Utils.strip(obj.serialise()));
     }
@@ -176,6 +275,12 @@ public class JSONSerialisableTest {
             this.isDeceased = isDeceased;
         }
 
+    }
+
+    record Family(SimplePerson parent, SimplePerson[] children, String familyName) implements JSONSerialisable {}
+
+    record Library(BookShelf[] shelves) implements JSONSerialisable {
+        static final String LIBRARY_NAME = "Genesis";
     }
 
     record Book(String title, int year, String author) implements JSONSerialisable{}
