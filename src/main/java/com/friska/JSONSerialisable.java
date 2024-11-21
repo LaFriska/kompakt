@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static com.friska.JSONSettings.*;
 
@@ -66,20 +67,27 @@ public interface JSONSerialisable {
         }
     }
 
+    /**
+     * Serialises an a JSON-serialisable object.
+     * @param obj the object to serialise.
+     * @param currSize current size of the indentation.
+     * @param omitted a set of names of omitted field variables.
+     * @return a string representation of the serialised JSON object.
+     * @param <T> an arbitrary type that extends {@link JSONSerialisable}.
+     * @throws IllegalAccessException
+     */
     private static <T extends JSONSerialisable> String serialise(T obj, int currSize, Set<String> omitted)
                                                                                 throws IllegalAccessException {
         Field[] fields = obj.getClass().getDeclaredFields();
         StringBuilder sb = new StringBuilder();
-        indent(sb, currSize);
-        sb.append("{").append("\n");
+        indent(sb, currSize, s -> s.append("{").append("\n"));
 
         for (Field field : fields) {
             if(!omitted.contains(field.getName()) && !field.accessFlags().contains(AccessFlag.STATIC)){
                 boolean canAccess = field.canAccess(obj);
                 field.setAccessible(true);
                 Object item = field.get(obj);
-                indent(sb, currSize + INDENT_SIZE);
-                sb.append(wrap(field.getName())).append(": ");
+                indent(sb, currSize + INDENT_SIZE, s -> s.append(wrap(field.getName())).append(": "));
                 serialiseItem(currSize, item, sb);
                 sb.append(",").append("\n");
                 field.setAccessible(canAccess);
@@ -88,11 +96,16 @@ public interface JSONSerialisable {
 
         if(sb.charAt(sb.length() - 2) == ',')
             sb.delete(sb.length() - 2, sb.length() - 1);
-        indent(sb, currSize);
-        sb.append("}");
+        indent(sb, currSize, s -> s.append("}"));
         return sb.toString();
     }
 
+    /**
+     * Helper method to serialise a single item, which is either a field or another serialisable object.
+     * @param currSize current size of the indentation.
+     * @param item the item to serialise.
+     * @param sb current string builder used in the serialisation.
+     */
     private static void serialiseItem(int currSize, Object item, StringBuilder sb) {
         //Recursive call
         if(item instanceof JSONSerialisable serialisable)
@@ -111,15 +124,15 @@ public interface JSONSerialisable {
                 if(i != array.length - 1) sb.append(",");
                 sb.append("\n");
             }
-            indent(sb, currSize + INDENT_SIZE);
-            sb.append("]");
+            indent(sb, currSize + INDENT_SIZE, s -> s.append("]"));
         }
         else
             sb.append(wrap(item.toString()));
     }
 
-    private static void indent(StringBuilder sb, int indentSize){
+    private static void indent(StringBuilder sb, int indentSize, Consumer<StringBuilder> action){
         sb.append(" ".repeat(Math.max(0, indentSize)));
+        action.accept(sb);
     }
 
     private static String wrap(String str){
