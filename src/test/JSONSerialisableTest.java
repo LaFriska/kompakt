@@ -7,6 +7,11 @@ import static org.junit.Assert.*;
 
 public class JSONSerialisableTest {
 
+
+    /**
+     * Tests whether the JSON strings are trivial when it should be trivial. For example, {@link JSONSerialisable} should
+     * ignore static fields.
+     */
     @Test
     public void testTrivial(){
 
@@ -51,10 +56,58 @@ public class JSONSerialisableTest {
 
     }
 
-    public<T extends JSONSerialisable> void testClean(String expected, T obj){
-        assertEquals(expected, Utils.strip(obj.serialise()));
+    /**
+     * Tests simple but non-trivial classes.
+     */
+    @Test
+    public void testSimple(){
+
+        SimplePerson p1 = new SimplePerson("Peter", 18, 182.2F, 76.3F, true);
+
+        String s1 = """
+                {
+                  "name": "Peter",
+                  "age": 18,
+                  "height": 182.2,
+                  "weight": 76.3,
+                  "isDeceased": true
+                }
+                """;
+
+        testClean(s1, p1);
+
     }
 
+    public<T extends JSONSerialisable> void testClean(String expected, T obj){
+        assertEquals(Utils.strip(expected), Utils.strip(obj.serialise()));
+    }
+
+    //----------------------------------------------CLASSES------------------------------------------------------------
+
     static class EmptyClass implements JSONSerialisable {}
+
+    static class SimplePerson implements JSONSerialisable{
+
+        public static final float AVG_WEIGHT = 82.5F;
+
+        private String name;
+
+        public final int age;
+
+        public final float height;
+
+        public final float weight;
+
+        protected boolean isDeceased;
+
+        SimplePerson(String name, int age, float height, float weight, boolean isDeceased){
+            this.name = name;
+            this.age = age;
+            this.height = height;
+            this.weight = weight;
+            this.isDeceased = isDeceased;
+        }
+
+    }
 
 }
