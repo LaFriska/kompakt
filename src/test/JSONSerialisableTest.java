@@ -62,7 +62,16 @@ public class JSONSerialisableTest {
     @Test
     public void testSimple(){
 
-        SimplePerson p1 = new SimplePerson("Peter", 18, 182.2F, 76.3F, true);
+        SimplePerson t1 = new SimplePerson("Peter", 18, 182.2F, 76.3F, true);
+        SimplePerson t2 = new SimplePerson("Jake", 0, -30F, 8F, false);
+        Book t3 = new Book("The search for modern China", 1990, "Jonathan D. Spence");
+        BookShelf t4 = new BookShelf("horror", new Book[]{
+                new Book("book1", 1990, "John Doe"),
+                new Book("book2", -1000, "Jack Doe"),
+                new Book("book3", 0, "Foo Bar"),
+                new Book(null, 0, ""),
+        });
+        BookShelf t5 = new BookShelf(null, new Book[]{null});
 
         String s1 = """
                 {
@@ -73,12 +82,71 @@ public class JSONSerialisableTest {
                   "isDeceased": true
                 }
                 """;
+        String s2 = """
+                {
+                  "name": "Jake",
+                  "age": 0,
+                  "height": -30.0,
+                  "weight": 8.0,
+                  "isDeceased": false
+                }
+                """;
 
-        testClean(s1, p1);
+        String s3 = """
+                {
+                  "title": "The search for modern China",
+                  "year": 1990,
+                  "author": "Jonathan D. Spence"
+                }
+                """;
+
+        String s4 = """
+                {
+                  "category": "horror",
+                  "books": [
+                    {
+                      "title": "book1",
+                      "year": 1990,
+                      "author": "John Doe"
+                    },
+                    {
+                      "title": "book2",
+                      "year": -1000,
+                      "author": "Jack Doe"
+                    },
+                    {
+                      "title": "book3",
+                      "year": 0,
+                      "author": "Foo Bar"
+                    },
+                    {
+                      "title": null,
+                      "year": 0,
+                      "author": ""
+                    }
+                  ]
+                }
+                """;
+
+        String s5 = """
+                {
+                  "category": null,
+                  "books": [
+                    null
+                  ]
+                }
+                """;
+
+
+        JSONSerialisable[] objects = new JSONSerialisable[]{t1, t2, t3, t4, t5};
+        String[] expectedStrings = new String[]{s1, s2, s3, s4, s5};
+
+        for (int i = 0; i < expectedStrings.length; i++)
+            testClean(expectedStrings[i], objects[i]);
 
     }
 
-    public<T extends JSONSerialisable> void testClean(String expected, T obj){
+    public <T extends JSONSerialisable> void testClean(String expected, T obj){
         assertEquals(Utils.strip(expected), Utils.strip(obj.serialise()));
     }
 
@@ -109,5 +177,9 @@ public class JSONSerialisableTest {
         }
 
     }
+
+    record Book(String title, int year, String author) implements JSONSerialisable{}
+
+    record BookShelf(String category, Book[] books) implements JSONSerialisable{}
 
 }
