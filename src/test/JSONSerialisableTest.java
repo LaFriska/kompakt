@@ -50,6 +50,7 @@ public class JSONSerialisableTest {
         }
 
         testClean("{}", new EmptyClass());
+        testClean("{}", new EmptyClassStatic());
         testClean("{}", new EmptyClassMethod());
         testClean("{}", new EmptyClassContrived());
         testClean("{\"obj1\":{},\"obj2\":{},\"obj3\":{}}", new NonEmptyContrived());
