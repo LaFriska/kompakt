@@ -5,7 +5,10 @@ import java.util.HashSet;
 
 import static org.junit.Assert.*;
 
-public class JSONSerialisableTest {
+/**
+ * This class extensively tests {@link JSONSerialisable#serialise()}.
+ */
+public class SerialiseTest {
 
 
     /**
