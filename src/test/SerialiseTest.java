@@ -454,6 +454,83 @@ public class SerialiseTest {
     }
 
 
+    /**
+     * As specified in the documentation for {@link JSONSerialisable#serialise()}, the serialise method only
+     * scans non-inherited fields from the object. This test method ensures that the fields detected by the
+     * interface is consistent.
+     */
+    @Test
+    public void testInheritance(){
+
+        class Parent{
+            private int pf1;
+
+            public int pf2;
+
+            String pf3;
+
+            Parent(int a, int b, String c){
+                pf1 = a;
+                pf2 = b;
+                pf3 = c;
+            }
+        }
+
+        class Child extends Parent implements JSONSerialisable{
+
+            private int cf1;
+
+            public String cf2;
+
+            Child(int a, int b, String c, int d, String e) {
+                super(a, b, c);
+                cf1 = d;
+                cf2 = e;
+            }
+        }
+
+        class GrandChild extends Child{
+
+            private int gf1;
+
+            public String gf2;
+
+
+            GrandChild(int a, int b, String c, int d, String e, int f, String g) {
+                super(a, b, c, d, e);
+                this.gf1 = f;
+                this.gf2 = g;
+            }
+        }
+
+
+        Child test1 = new Child(1, 2, null, 3, "Cat");
+        Child test2 = new Child(1, 2, "Cat", Integer.MIN_VALUE, null);
+        GrandChild test3 = new GrandChild(1, 2, "Cat", Integer.MIN_VALUE, null, 25, "Hello World");
+
+        testClean("""
+                {
+                  "cf1": 3,
+                  "cf2": "Cat"
+                }
+                """, test1);
+
+        testClean("""
+                {
+                  "cf1": -2147483648,
+                  "cf2": null
+                }
+                """, test2);
+        testClean("""
+                {
+                  "gf1": 25,
+                  "gf2": "Hello World"
+                }
+                """, test3);
+
+    }
+
+
     public <T extends JSONSerialisable> void testClean(String expected, T obj){
         assertEquals(Utils.strip(expected), Utils.strip(obj.serialise()));
     }
