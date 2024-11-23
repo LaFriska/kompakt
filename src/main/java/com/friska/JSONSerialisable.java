@@ -12,10 +12,18 @@ import static com.friska.JSONSettings.*;
 
 /**
  * Classes implementing this interface allows Kompakt to search through field variables and serialise them into a
- * JSON string. This process is done by calling {@link JSONSerialisable#serialise()}. The programme will interpret the
- * variables at its own discretion, for more control over the serialisation process, classes should instead extend
- * {@link JSONSerialiser}. This interface does however, provide control over which field variables may be omitted.
- * To do so, override {@link JSONSerialisable#ignoredFields()} and return a string of ignored field names.
+ * JSON string. This process is done by calling {@link JSONSerialisable#serialise()}. There are configurations available
+ * in the form of trivial methods with a default return value, but should be overridden if such configurations should
+ * be modified. Below are such configurations. (Read their documentation for more detail.)
+ * <ul>
+ *     <li>
+ *         {@link JSONSerialisable#ignoredFields()}, return an array of field names that should be ignored from
+ *         serialisation.
+ *     </li>
+ *     <li>
+ *         {@link JSONSerialisable#deepSerialise()} return whether fields from super classes should be serialised.
+ *     </li>
+ * </ul>
  */
 public interface JSONSerialisable {
 
