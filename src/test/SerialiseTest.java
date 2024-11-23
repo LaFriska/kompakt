@@ -2,6 +2,9 @@ import com.friska.JSONSerialisable;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 import static org.junit.Assert.*;
 
@@ -527,6 +530,110 @@ public class SerialiseTest {
                   "gf2": "Hello World"
                 }
                 """, test3);
+
+    }
+
+    @Test
+    public void testIgnore(){
+        class PersonIgnore implements JSONSerialisable{
+
+            private String name;
+
+            public final int age;
+
+            public final float height;
+
+            public final float weight;
+
+            protected boolean isDeceased;
+
+            PersonIgnore(String name, int age, float height, float weight, boolean isDeceased){
+                this.name = name;
+                this.age = age;
+                this.height = height;
+                this.weight = weight;
+                this.isDeceased = isDeceased;
+            }
+
+            @Override
+            public String[] ignoredFields() {
+                return new String[]{"height", "isDeceased", "weight"};
+            }
+        }
+
+        class IgnoreContrived implements JSONSerialisable{
+
+            int f1;
+
+            String f2;
+
+            boolean f3;
+
+            HashSet<HashSet<Map<String, Set<Stack<Book>>>>> f4;
+
+            IgnoreContrived f5;
+
+            public IgnoreContrived(int f1, String f2, boolean f3, HashSet<HashSet<Map<String, Set<Stack<Book>>>>> f4,
+                                   IgnoreContrived f5){
+                this.f1 = f1;
+                this.f2 = f2;
+                this.f3 = f3;
+                this.f4 = f4;
+                this.f5 = f5;
+            }
+
+            @Override
+            public String[] ignoredFields() {
+                return new String[]{"f2", "f3", "f4", "f5", "something else"};
+            }
+        }
+
+        class IgnoreTrivial implements JSONSerialisable{
+
+            String[] strings = new String[]{"a", "b", "cde", "hello"};
+
+            int[] ints = new int[]{1,2,3,4,5};
+
+            boolean[] bools = null;
+
+            @Override
+            public String[] ignoredFields() {
+                return new String[]{"strings", "bools", "ints"};
+            }
+        }
+
+        PersonIgnore t1 = new PersonIgnore("Peter", 23, 172F, 80, false);
+        PersonIgnore t2 = new PersonIgnore("John Doe", -1, -1, 23, true);
+        IgnoreContrived t3 = new IgnoreContrived(21, "Hello", false, new HashSet<>(), null);
+        IgnoreContrived t4 = new IgnoreContrived(19, "World", true, null, t3);
+
+        testClean("""
+                {
+                  "name": "Peter",
+                  "age": 23
+                }
+                """, t1);
+
+        testClean("""
+                {
+                  "name": "John Doe",
+                  "age": -1
+                }
+                """, t2);
+        testClean("""
+                {
+                  "f1": 21
+                }
+                """, t3);
+        testClean("""
+                {
+                  "f1": 19
+                }
+                """, t4);
+        testClean("""
+                {
+                }
+                """, new IgnoreTrivial());
 
     }
 
