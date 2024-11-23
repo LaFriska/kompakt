@@ -24,6 +24,9 @@ import static com.friska.JSONSettings.*;
  *         {@link JSONSerialisable#deepSerialise()} return whether fields from super classes should be serialised.
  *     </li>
  * </ul>
+ * Another configuration that does not come in the form of a default non-static method is
+ * {@link JSONSerialisable#setIndentSize(int)}, which sets the global indent size of JSON serialisation using a single
+ * static setter.
  */
 public interface JSONSerialisable {
 
@@ -54,6 +57,10 @@ public interface JSONSerialisable {
      */
     default boolean deepSerialise(){
         return false;
+    }
+
+    default int indentSize(){
+        return 2;
     }
 
     /**
