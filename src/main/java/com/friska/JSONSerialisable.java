@@ -2,6 +2,7 @@ package com.friska;
 
 import java.lang.reflect.AccessFlag;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +36,16 @@ public interface JSONSerialisable {
      */
     default String[] ignoredFields(){
         return null;
+    }
+
+    /**
+     * By default, this interface only serialises non-inherited fields in the child class. In order to serialise
+     * inherited ones too, this method should be overridden to return true, in which case every non-static fields,
+     * including private ones, unless omitted by {@link JSONSerialisable#ignoredFields()}, will be serialised.
+     * @return whether inherited fields should be serialised.
+     */
+    default boolean deepSerialise(){
+        return false;
     }
 
     /**
@@ -77,11 +88,17 @@ public interface JSONSerialisable {
      * @throws IllegalAccessException
      */
     private static <T extends JSONSerialisable> String serialise(T obj, int currSize, Set<String> omitted)
-                                                                                throws IllegalAccessException {
-        Field[] fields = obj.getClass().getDeclaredFields();
+                                                                                      throws IllegalAccessException {
+
+        //Fetches the fields
+        List<Field> fields = new ArrayList<>();
+        getFields(obj.getClass(), fields, obj.deepSerialise());
+
+        //Initialise string builder
         StringBuilder sb = new StringBuilder();
         indent(sb, currSize, s -> s.append("{").append("\n"));
 
+        //Iterate
         for (Field field : fields) {
             if(!omitted.contains(field.getName()) && !field.accessFlags().contains(AccessFlag.STATIC)){
                 boolean canAccess = field.canAccess(obj);
@@ -98,6 +115,31 @@ public interface JSONSerialisable {
             sb.delete(sb.length() - 2, sb.length() - 1);
         indent(sb, currSize, s -> s.append("}"));
         return sb.toString();
+    }
+
+
+    /**
+     * Fetches all required fields to be serialised given an object, and adds them to a given list.
+     * @param clazz the class from which the fields are fetched.
+     * @param getFieldDeep whether the programme should fetch inherited fields. When this parameter is true, this
+     *                     method becomes recursive.
+     * @param list initially an empty list, fields will be added to this list.
+     */
+    private static void getFields(Class<?> clazz, List<Field> list, boolean getFieldDeep){
+
+        if(!getFieldDeep){
+            list.addAll(List.of(clazz.getDeclaredFields()));
+            return;
+        }
+
+        Class<?> superClass = clazz.getSuperclass();
+        getFields(clazz, list, false);
+
+        //Base case
+        if(superClass == null) return;
+
+        //Inductive case
+        getFields(superClass, list, true);
     }
 
     /**
