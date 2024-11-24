@@ -1,10 +1,7 @@
 import com.friska.JSONSerialisable;
 import org.junit.Test;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -634,6 +631,130 @@ public class SerialiseTest {
                 {
                 }
                 """, new IgnoreTrivial());
+
+    }
+
+
+    /**
+     * Tests serialisation of fields that inherit {@link Iterable}.
+     */
+    @Test
+    public void testIterables(){
+
+        class Simple implements JSONSerialisable{
+
+            public static HashSet<String> SET;
+
+            static{
+                SET = new HashSet<>();
+                SET.add("a");
+                SET.add("b");
+                SET.add("c");
+            }
+            final TreeSet<Integer> integers = new TreeSet<>();
+
+            final ArrayList<String> strings = new ArrayList<>();
+        }
+
+        Simple simple = new Simple();
+        simple.integers.add(1);
+        simple.integers.add(3);
+        simple.integers.add(2);
+        simple.integers.add(4);
+        simple.integers.add(5);
+        simple.strings.add("Cat");
+        simple.strings.add("Dog");
+        simple.strings.add("Hello World");
+
+        testClean("""
+                {
+                  "integers": [
+                    1,2,3,4,5
+                  ],
+                  "strings": [
+                    "Cat", "Dog", "Hello World"
+                  ]
+                }
+                """, simple);
+
+        Simple simple2 = new Simple();
+        simple2.integers.add(200);
+        simple2.integers.add(300);
+
+        testClean("""
+                {
+                  "integers": [
+                    200, 300
+                  ],
+                  "strings": [
+                  ]
+                }
+                """, simple2);
+
+        class Contrived implements JSONSerialisable{
+            ArrayList<TreeSet<Integer>>[] contrivedList;
+            Contrived(ArrayList<TreeSet<Integer>>[] contrivedList){
+                this.contrivedList = contrivedList;
+            }
+        }
+
+        TreeSet<Integer> t1 = new TreeSet<>();
+        t1.add(1);
+        t1.add(2);
+
+        TreeSet<Integer> t2 = new TreeSet<>();
+        t2.add(3);
+
+        TreeSet<Integer> t3 = new TreeSet<>();
+        t3.add(3);
+        t3.add(4);
+        t3.add(5);
+        t3.add(6);
+
+        TreeSet<Integer> t4 = new TreeSet<>();
+        t4.add(-200);
+        t4.add(-100);
+        t4.add(100);
+        t4.add(200);
+
+        ArrayList<TreeSet<Integer>> arrayList1 = new ArrayList<>();
+        arrayList1.add(t1);
+        arrayList1.add(new TreeSet<>());
+        arrayList1.add(t2);
+        arrayList1.add(t3);
+
+        ArrayList<TreeSet<Integer>> arrayList2 = new ArrayList<>();
+        arrayList2.add(t3);
+        arrayList2.add(t4);
+        arrayList2.add(new TreeSet<>());
+
+        ArrayList[] contrivedList = new ArrayList[3];
+
+        contrivedList[0] = arrayList1;
+        contrivedList[1] = arrayList2;
+        contrivedList[2] = new ArrayList<TreeSet<Integer>>();
+
+        Contrived c = new Contrived(contrivedList);
+
+        testClean("""
+                {
+                  "contrivedList": [
+                    [
+                      [1,2],
+                      [],
+                      [3],
+                      [3,4,5,6]
+                    ],
+                    [
+                      [3,4,5,6],
+                      [-200, -100, 100, 200],
+                      []
+                    ],
+                    [
+                    ]
+                  ]
+                }
+                """, c);
 
     }
 

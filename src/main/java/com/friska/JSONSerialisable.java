@@ -17,11 +17,15 @@ import static com.friska.JSONSettings.*;
  * be modified. Below are such configurations. (Read their documentation for more detail.)
  * <ul>
  *     <li>
- *         {@link JSONSerialisable#ignoredFields()}, return an array of field names that should be ignored from
+ *         {@link JSONSerialisable#ignoredFields()}, returns an array of field names that should be ignored from
  *         serialisation.
  *     </li>
  *     <li>
- *         {@link JSONSerialisable#deepSerialise()} return whether fields from super classes should be serialised.
+ *         {@link JSONSerialisable#deepSerialise()} returns whether fields from super classes should be serialised.
+ *     </li>
+ *     <li>
+ *         {@link JSONSerialisable#serialiseIterablesAsArrays()}, returns whether fields that inherit {@link Iterable}
+ *         should be serialised as JSON arrays.
  *     </li>
  * </ul>
  * Another configuration that does not come in the form of a default non-static method is
@@ -59,8 +63,14 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
         return false;
     }
 
-    default int indentSize(){
-        return 2;
+    /**
+     * By default, fields that are instances of the {@link Iterable} interface will be serialised as JSON arrays.
+     * Some examples of childrens of {@link Iterable} are {@link HashSet}, and {@link ArrayList}. If for whatever
+     * reason this feature should be disabled, override this method and return false.
+     * @return whether instances of {@link Iterable} are serialised as arrays.
+     */
+    default boolean serialiseIterablesAsArrays(){
+        return true;
     }
 
     /**
