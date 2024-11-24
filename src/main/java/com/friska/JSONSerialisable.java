@@ -28,7 +28,7 @@ import static com.friska.JSONSettings.*;
  * {@link JSONSerialisable#setIndentSize(int)}, which sets the global indent size of JSON serialisation using a single
  * static setter.
  */
-public interface JSONSerialisable {
+public interface JSONSerialisable { //TODO make any iterable be serialised as a list
 
     /**
      * Sets a new indentation size for JSON serialisations.
