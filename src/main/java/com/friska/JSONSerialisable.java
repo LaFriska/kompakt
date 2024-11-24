@@ -182,6 +182,19 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
                 sb.append("\n");
             }
             indent(sb, currSize + INDENT_SIZE, s -> s.append("]"));
+        } else if (item instanceof Iterable<?> iterable){
+            sb.append("[").append("\n");
+            boolean flag = false;
+            for (Object o : iterable) {
+                if(flag){
+                    sb.append(",");
+                    sb.append("\n");
+                }
+                serialiseItem(currSize + INDENT_SIZE, o, sb);
+                flag = true;
+            }
+            indent(sb, currSize + INDENT_SIZE, s -> s.append("]"));
+
         }
         else
             sb.append(wrap(item.toString()));
