@@ -150,7 +150,7 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
      *                     method becomes recursive.
      * @param list initially an empty list, fields will be added to this list.
      */
-    private static void getFields(Class<?> clazz, List<Field> list, boolean getFieldDeep){
+    private static void getFields(Class<?> clazz, List<Field> list, boolean getFieldDeep){ //TODO make fields abstract
 
         if(!getFieldDeep){
             list.addAll(List.of(clazz.getDeclaredFields()));
