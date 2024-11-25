@@ -15,67 +15,67 @@ public class JSONObjectTest {
      */
     @Test
     public void testBasicOperations() {
-        JSONObject jsonObject = new JSONObject();
+        JSONObject o = new JSONObject();
 
-        // Test adding attributes
-        jsonObject.addAttribute("name", "John Doe");
-        jsonObject.addAttribute("age", 30);
-        jsonObject.addAttribute("isActive", true);
-        jsonObject.addAttribute("nestedObject", new JSONObject());
-        jsonObject.addAttribute("array", new String[]{"item1", "item2"});
+        //Test adding attributes
+        o.addAttribute("name", "John Doe");
+        o.addAttribute("age", 30);
+        o.addAttribute("isActive", true);
+        o.addAttribute("nestedObject", new JSONObject());
+        o.addAttribute("array", new String[]{"item1", "item2"});
 
-        // Test retrieving attributes
-        assertEquals("John Doe", jsonObject.getString("name"));
-        assertEquals(30, jsonObject.getNumber("age"));
-        assertEquals(true, jsonObject.getBool("isActive"));
-        assertNotNull(jsonObject.getJSONObject("nestedObject"));
-        assertArrayEquals(new String[]{"item1", "item2"}, jsonObject.getArray("array"));
+        //Test retrieving attributes
+        assertEquals("John Doe", o.getString("name"));
+        assertEquals(30, o.getNumber("age"));
+        assertEquals(true, o.getBool("isActive"));
+        assertNotNull(o.getJSONObject("nestedObject"));
+        assertArrayEquals(new String[]{"item1", "item2"}, o.getArray("array"));
 
-        // Test contains method
-        assertTrue(jsonObject.contains("name"));
-        assertTrue(jsonObject.contains("age"));
-        assertFalse(jsonObject.contains("nonExistentAttribute"));
+        //Test contains method
+        assertTrue(o.contains("name"));
+        assertTrue(o.contains("age"));
+        assertFalse(o.contains("nonExistentAttribute"));
 
-        // Test removeAttribute
-        Object removed = jsonObject.removeAttribute("name");
+        //Test removeAttribute
+        Object removed = o.removeAttribute("name");
         assertEquals("John Doe", removed);
-        assertFalse(jsonObject.contains("name"));
+        assertFalse(o.contains("name"));
 
-        // Validate removal effects
-        assertThrows(AttributeNotFoundException.class, () -> jsonObject.getItem("name"));
-        assertThrows(AttributeNotFoundException.class, () -> jsonObject.getString("name"));
+        //Validate removal
+        assertThrows(AttributeNotFoundException.class, () -> o.getItem("name"));
+        assertThrows(AttributeNotFoundException.class, () -> o.getString("name"));
 
-        // Test removing a non-existent attribute
-        assertThrows(AttributeNotFoundException.class, () -> jsonObject.removeAttribute("nonExistentAttribute"));
+        //Test removing a non-existent attribute
+        assertThrows(AttributeNotFoundException.class, () -> o.removeAttribute("nonExistentAttribute"));
 
-        // Test adding a duplicate attribute
-        jsonObject.addAttribute("duplicateTest", 42);
-        assertThrows(IllegalArgumentException.class, () -> jsonObject.addAttribute("duplicateTest", 100));
+        //Test adding a duplicate attribute
+        o.addAttribute("duplicateTest", 42);
+        assertThrows(IllegalArgumentException.class, () -> o.addAttribute("duplicateTest", 100));
 
-        // Test null and edge cases
-        jsonObject.addAttribute("nullableAttribute", null);
-        assertNull(jsonObject.getItem("nullableAttribute"));
-        assertNull(jsonObject.getString("nullableAttribute"));
-        assertNull(jsonObject.getBool("nullableAttribute"));
-        assertNull(jsonObject.getJSONObject("nullableAttribute"));
-        assertNull(jsonObject.getNumber("nullableAttribute"));
-        assertNull(jsonObject.getArray("nullableAttribute"));
+        //Test null and edge cases
+        o.addAttribute("nullableAttribute", null);
+        assertNull(o.getItem("nullableAttribute"));
+        assertNull(o.getString("nullableAttribute"));
+        assertNull(o.getBool("nullableAttribute"));
+        assertNull(o.getJSONObject("nullableAttribute"));
+        assertNull(o.getNumber("nullableAttribute"));
+        assertNull(o.getArray("nullableAttribute"));
 
-        // Test invalid type access
-        assertThrows(AttributeTypeException.class, () -> jsonObject.getString("age")); // age is a Number, not String
-        assertThrows(AttributeTypeException.class, () -> jsonObject.getBool("age"));   // age is not a Boolean
-        assertThrows(AttributeTypeException.class, () -> jsonObject.getArray("age"));  // age is not an Array
+        //Test invalid type access
+        assertThrows(AttributeTypeException.class, () -> o.getString("age")); // age is a Number, not String
+        assertThrows(AttributeTypeException.class, () -> o.getBool("age"));   // age is not a Boolean
+        assertThrows(AttributeTypeException.class, () -> o.getArray("age"));  // age is not an Array
 
-        // Test object validity after multiple operations
-        assertFalse(jsonObject.isEmpty());
-        jsonObject.removeAttribute("age");
-        jsonObject.removeAttribute("isActive");
-        jsonObject.removeAttribute("nestedObject");
-        jsonObject.removeAttribute("array");
-        jsonObject.removeAttribute("nullableAttribute");
-        assertFalse(jsonObject.isEmpty());
-        jsonObject.removeAttribute("duplicateTest");
-        assertTrue(jsonObject.isEmpty());
+        // est object validity after multiple operations
+        assertFalse(o.isEmpty());
+        o.removeAttribute("age");
+        o.removeAttribute("isActive");
+        o.removeAttribute("nestedObject");
+        o.removeAttribute("array");
+        o.removeAttribute("nullableAttribute");
+        assertFalse(o.isEmpty());
+        o.removeAttribute("duplicateTest");
+        assertTrue(o.isEmpty());
     }
 
 }
