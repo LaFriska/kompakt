@@ -79,6 +79,45 @@ public class JSONObjectTest {
     }
 
     @Test
+    public void testEquivalence(){
+
+        JSONObject o1 = new JSONObject();
+        JSONObject c1 = new JSONObject();
+        c1.addAttribute("name", "Peter");
+        c1.addAttribute("age", 18);
+        c1.addAttribute("isEmployee", true);
+
+        o1.addAttribute("animal", "Cat");
+        o1.addAttribute("age", 5);
+        o1.addAttribute("adopted", false);
+        o1.addAttribute("children", new String[]{"child1", "child2", "child3"});
+        o1.addAttribute("zoo", null);
+        o1.addAttribute("caretaker", c1);
+
+        JSONObject o2 = new JSONObject();
+        JSONObject c2 = new JSONObject();
+        c2.addAttribute("age", 18);
+        c2.addAttribute("isEmployee", true);
+        c2.addAttribute("name", "Peter");
+
+        o2.addAttribute("animal", "Cat");
+        o2.addAttribute("zoo", null);
+        o2.addAttribute("caretaker", c2);
+        o2.addAttribute("adopted", false);
+        o2.addAttribute("children", new String[]{"child1", "child2", "child3"});
+        o2.addAttribute("age", 5);
+
+        assertTrue(o1.equals(o2));
+        c2.removeAttribute("isEmployee");
+        assertFalse(o1.equals(o2));
+        c1.addAttribute("isEmployee", false);
+        assertFalse(o1.equals(o2));
+        c2.removeAttribute("isEmployee");
+        c1.addAttribute("isEmployee", true);
+        assertTrue(o1.equals(o2));
+    }
+
+    @Test
     public void testTypes(){
 
         JSONObject o = new JSONObject();
@@ -93,8 +132,6 @@ public class JSONObjectTest {
         o.addAttribute("children", new String[]{"child1", "child2", "child3"});
         o.addAttribute("zoo", null);
         o.addAttribute("caretaker", careTaker);
-
-        System.out.println(o.serialise());
 
     }
 

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This class represents an arbitrary object that may be represented by JSON. It may be considered a "free" object
@@ -177,5 +178,53 @@ public class JSONObject implements JSONSerialisable{
     @Override
     public String toString() {
         return serialise();
+    }
+
+    /**
+     * Two JSON objects are equal if the set of one set of attributes is equal to the other set of attributes (see {@link Attribute#equals(Object)})
+     * <b>and</b> that the values associated by each name are equal. Note that in the case of equivalence, order does not
+     * matter, but unlike attribute equivalence, the equivalence value-wise does matter. Note that this definition is
+     * recursive in nature. Note also for arrays, order does matter, since an array on its own is considered an object,
+     * and ordering is considered in array equivalence.
+     */
+    @Override
+    public boolean equals(Object obj) {
+
+        //Trivial conditions
+        if(obj == null) return false;
+        if(super.equals(obj)) return true;
+        if(!(obj instanceof JSONObject jsonObject))
+            return false;
+
+        //Checks if the set of all attribute names are equal.
+        Set<String> set1 = jsonObject.attributeMap.keySet();
+        Set<String> set2 = this.attributeMap.keySet();
+        if(!set1.equals(set2)) return false;
+
+        //Checks equivalence between values.
+        for (Attribute a : attributeList){
+            Object o1 = this.getItem(a.name());
+            Object o2 = this.getItem(a.name());
+
+            if(o1 != null && o2 == null)
+                return false;
+            if(o1 == null && o2 != null)
+                return false;
+            if(o1 != null){
+                if(o1.getClass().isArray() && o2.getClass().isArray()){
+                    Object[] arr1 = (Object[]) o1;
+                    Object[] arr2 = (Object[]) o2;
+                    if(arr1.length != arr2.length)
+                        return false;
+                    for (int i = 0; i < arr1.length; i++) {
+                        if(!arr1[i].equals(arr2[i]))
+                            return false;
+                    }
+                }
+                else if(!o1.equals(o2))
+                    return false;
+            }
+        }
+        return true;
     }
 }
