@@ -62,7 +62,7 @@ public class JSONObjectTest {
         assertNull(o.getArray("nullableAttribute"));
 
         //Test invalid type access
-        assertThrows(AttributeTypeException.class, () -> o.getString("age")); // age is a Number, not String
+        assertThrows(AttributeTypeException.class, () -> o.getString("age")); // age is not String
         assertThrows(AttributeTypeException.class, () -> o.getBool("age"));   // age is not a Boolean
         assertThrows(AttributeTypeException.class, () -> o.getArray("age"));  // age is not an Array
 
@@ -76,6 +76,26 @@ public class JSONObjectTest {
         assertFalse(o.isEmpty());
         o.removeAttribute("duplicateTest");
         assertTrue(o.isEmpty());
+    }
+
+    @Test
+    public void testTypes(){
+
+        JSONObject o = new JSONObject();
+        JSONObject careTaker = new JSONObject();
+        careTaker.addAttribute("name", "Peter");
+        careTaker.addAttribute("age", 18);
+        careTaker.addAttribute("isEmployee", true);
+
+        o.addAttribute("animal", "Cat");
+        o.addAttribute("age", 5);
+        o.addAttribute("adopted", false);
+        o.addAttribute("children", new String[]{"child1", "child2", "child3"});
+        o.addAttribute("zoo", null);
+        o.addAttribute("caretaker", careTaker);
+
+        System.out.println(o.serialise());
+
     }
 
 }

@@ -155,7 +155,7 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
             Object val = attribute.val();
             if(!omitted.contains(name)){
                 indent(sb, currSize + INDENT_SIZE, s -> s.append(wrap(name)).append(": "));
-                serialiseItem(currSize, val, sb);
+                serialiseItem(currSize, val, sb, false);
                 sb.append(",").append("\n");
             }
         }
@@ -220,21 +220,27 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
      * @param item the item to serialise.
      * @param sb current string builder used in the serialisation.
      */
-    private static void serialiseItem(int currSize, Object item, StringBuilder sb) {
+    private static void serialiseItem(int currSize, Object item, StringBuilder sb, boolean indentAlways) {
         //Recursive call
-        if(item instanceof JSONSerialisable serialisable)
-            sb.append(serialisable.serialise(currSize + INDENT_SIZE, serialisable.ignoredFields()));
+        if(item instanceof JSONSerialisable s)
+            sb.append(s.serialise(currSize + INDENT_SIZE, s.ignoredFields()));
 
         //Base cases
         else if(item == null)
-            sb.append("null");
+            if(indentAlways)
+                indent(sb, currSize + INDENT_SIZE, s -> s.append("null"));
+            else
+                sb.append("null");
         else if(item instanceof Number || item instanceof Boolean)
-            sb.append(item);
+            if(indentAlways)
+                indent(sb, currSize + INDENT_SIZE, s -> s.append(item));
+            else
+                sb.append(item);
         else if(item.getClass().isArray()){
             sb.append("[").append("\n");
             Object[] array = (Object[]) item;
             for (int i = 0; i < array.length; i++) {
-                serialiseItem(currSize + INDENT_SIZE, array[i], sb);
+                serialiseItem(currSize + INDENT_SIZE, array[i], sb, true);
                 if(i != array.length - 1) sb.append(",");
                 sb.append("\n");
             }
@@ -247,13 +253,16 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
                     sb.append(",");
                     sb.append("\n");
                 }
-                serialiseItem(currSize + INDENT_SIZE, o, sb);
+                serialiseItem(currSize + INDENT_SIZE, o, sb, true);
                 flag = true;
             }
             indent(sb, currSize + INDENT_SIZE, s -> s.append("]"));
-
         }
-        else sb.append(wrap(item.toString()));
+        else
+            if(indentAlways)
+                indent(sb, currSize + INDENT_SIZE, s -> s.append(wrap(item.toString())));
+            else
+                sb.append(wrap(item.toString()));
     }
 
     private static void indent(StringBuilder sb, int indentSize, Consumer<StringBuilder> action){
