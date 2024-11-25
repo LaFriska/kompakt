@@ -63,6 +63,20 @@ public class JSONObject implements JSONSerialisable{
     }
 
     /**
+     * @return whether there are no attributes stored in this object.
+     */
+    public boolean isEmpty(){
+        return attributeMap.isEmpty();
+    }
+
+    /**
+     * @return whether an object associates to a given name by an attribute.
+     */
+    public boolean contains(@NotNull String name){
+        return attributeMap.containsKey(name);
+    }
+
+    /**
      * Retrieves a value associated by its name.
      * @param name name of the attribute.
      * @return the value of the attribute.
@@ -155,5 +169,13 @@ public class JSONObject implements JSONSerialisable{
     @Override
     public List<Attribute> jsonAttributes() {
         return new ArrayList<>(attributeList);
+    }
+
+    /**
+     * String representation defined as its JSON-string representation.
+     */
+    @Override
+    public String toString() {
+        return serialise();
     }
 }
