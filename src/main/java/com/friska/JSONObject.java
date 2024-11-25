@@ -1,24 +1,47 @@
 package com.friska;
 
-import java.lang.reflect.Field;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-public class JSONObject {
+public class JSONObject implements JSONSerialisable{
 
-    private List<Object> objects;
+    private final List<Attribute> attributeList = new ArrayList<>();
 
-    private Set<String> allFields;
+    private final HashMap<String, Object> attributeMap = new HashMap<>();
 
-    private Map<String, String> stringFields;
-    private Map<String, Number> numberFields;
+    public void addAttribute(@NotNull String name, Object val){
+        if(attributeMap.containsKey(name))
+            throw new IllegalArgumentException("Cannot add pre-existing attribute \"" + name +"\".");
+        attributeList.add(new Attribute(name, val));
+        attributeMap.put(name, val);
+    }
 
-    private Map<String, Boolean> booleanFields;
+    public Object removeAttribute(@NotNull String name){
+        if(!attributeMap.containsKey(name))
+            throw new AttributeNotFoundException(name);
+        Object o = attributeMap.get(name);
+        attributeMap.remove(name);
+        for (int i = 0; i < attributeList.size(); i++) {
+            if(attributeList.get(i).name().equals(name)){
+                attributeList.remove(i);
+                break;
+            }
+        }
+        return o;
+    }
 
-    private Map<String, Object[]> arrayFields;
+    public @Nullable Object getItem(@NotNull String name){
+        if(!attributeMap.containsKey(name)) throw new AttributeNotFoundException(name);
+        return attributeMap.get(name);
+    }
 
-    private Set<String> nulls;
-
+    @Override
+    public List<Attribute> jsonAttributes() {
+        return attributeList;
+    }
 }
