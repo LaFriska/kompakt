@@ -21,11 +21,14 @@ import static com.friska.JSONSettings.*;
  *         serialisation.
  *     </li>
  *     <li>
- *         {@link JSONSerialisable#deepSerialise()} returns whether fields from super classes should be serialised.
+ *         {@link JSONSerialisable#deepSerialise()}, returns whether fields from super classes should be serialised.
  *     </li>
  *     <li>
  *         {@link JSONSerialisable#serialiseIterablesAsArrays()}, returns whether fields that inherit {@link Iterable}
  *         should be serialised as JSON arrays.
+ *     </li>
+ *     <li>
+ *         {@link JSONSerialisable#jsonAttributes()}, returns a list of attributes to be serialised.
  *     </li>
  * </ul>
  * Another configuration that does not come in the form of a default non-static method is
@@ -77,7 +80,10 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
      * This method denotes the attributes that should be serialised into the JSON string. The default implementation
      * ensures that an attribute is serialised if and only if it is represented by a non-static field in the object
      * class. However, overriding this method may enable custom attributes to be serialised. Note that in this case,
-     * an {@link Attribute} is simply a record holding a name, which is a string, and an arbitrary {@link Object}.
+     * an {@link Attribute} is simply a record holding a name, which is a string, and an arbitrary {@link Object}.<p>
+     * <b>Please be adviced that</b> this method will not over-write {@link JSONSerialisable#deepSerialise()}, and if
+     * {@link JSONSerialisable#deepSerialise()} is overridden to return true, with a custom implementation of this method,
+     * inherited fields will <b>still be serialised</b>.
      * @return a list of attributes to be serialised.
      */
     default List<Attribute> jsonAttributes(){
@@ -192,7 +198,7 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
     private static<T extends JSONSerialisable> void
                                     getAttributes(T obj, Class<?> clazz, List<Attribute> list, boolean getFieldDeep){
         if(!getFieldDeep){
-            if(clazz.equals(obj.getClass())) list.addAll(fetchFieldsAsAttributes(obj));
+            if(clazz.equals(obj.getClass())) list.addAll(obj.jsonAttributes());
             else list.addAll(fieldToAttributes(clazz.getDeclaredFields(), obj));
             return;
         }
