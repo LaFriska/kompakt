@@ -74,6 +74,17 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
     }
 
     /**
+     * This method denotes the attributes that should be serialised into the JSON string. The default implementation
+     * ensures that an attribute is serialised if and only if it is represented by a non-static field in the object
+     * class. However, overriding this method may enable custom attributes to be serialised. Note that in this case,
+     * an {@link Attribute} is simply a record holding a name, which is a string, and an arbitrary {@link Object}.
+     * @return a list of attributes to be serialised.
+     */
+    default List<Attribute> jsonAttributes(){
+        return fetchFieldsAsAttributes(this);
+    }
+
+    /**
      * Serialises the object. Note that this method will only serialise fields declared in the class itself, not
      * inherited ones. Any fields that has the form of an array of objects will be serialised as a JSON array.
      * Primitive number types, or any fields that inherit {@link Number} will be serialised as a JSON number, and
@@ -104,6 +115,15 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
     }
 
     /**
+     * Fetches non-static fields from an object's class and converts them to instances of {@link Attribute}.
+     * @param obj the object to fetch the fields from.
+     * @return a list of attributes representing these fields.
+     */
+    private static List<Attribute> fetchFieldsAsAttributes(Object obj){
+        return fieldToAttributes(obj.getClass().getDeclaredFields(), obj);
+    }
+
+    /**
      * Serialises an a JSON-serialisable object.
      * @param obj the object to serialise.
      * @param currSize current size of the indentation.
@@ -115,24 +135,22 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
     private static <T extends JSONSerialisable> String serialise(T obj, int currSize, Set<String> omitted)
                                                                                       throws IllegalAccessException {
 
-        //Fetches the fields
-        List<Field> fields = new ArrayList<>();
-        getFields(obj.getClass(), fields, obj.deepSerialise());
+        //Fetches the attributes
+        List<Attribute> attributes = new ArrayList<>();
+        getAttributes(obj, obj.getClass(), attributes, obj.deepSerialise());
 
         //Initialise string builder
         StringBuilder sb = new StringBuilder();
         indent(sb, currSize, s -> s.append("{").append("\n"));
 
         //Iterate
-        for (Field field : fields) {
-            if(!omitted.contains(field.getName()) && !field.accessFlags().contains(AccessFlag.STATIC)){
-                boolean canAccess = field.canAccess(obj);
-                field.setAccessible(true);
-                Object item = field.get(obj);
-                indent(sb, currSize + INDENT_SIZE, s -> s.append(wrap(field.getName())).append(": "));
-                serialiseItem(currSize, item, sb);
+        for (Attribute attribute : attributes) {
+            String name = attribute.name();
+            Object val = attribute.val();
+            if(!omitted.contains(name)){
+                indent(sb, currSize + INDENT_SIZE, s -> s.append(wrap(name)).append(": "));
+                serialiseItem(currSize, val, sb);
                 sb.append(",").append("\n");
-                field.setAccessible(canAccess);
             }
         }
 
@@ -142,33 +160,56 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
         return sb.toString();
     }
 
+    private static List<Attribute> fieldToAttributes(Field[] fields, Object obj){ //TODO add docs
+        try {
+            ArrayList<Attribute> attributes = new ArrayList<>();
+            for (Field field : fields) {
+                if (!field.accessFlags().contains(AccessFlag.STATIC)) {
+                    boolean canAccess = field.canAccess(obj);
+                    field.setAccessible(true);
+                    attributes.add(new Attribute(field.getName(), field.get(obj)));
+                    field.setAccessible(canAccess);
+                }
+            }
+            return attributes;
+        }catch (IllegalAccessException e){
+            e.printStackTrace();
+            throw new RuntimeException("An error occurred.");
+        }
+    }
 
     /**
-     * Fetches all required fields to be serialised given an object, and adds them to a given list.
-     * @param clazz the class from which the fields are fetched.
-     * @param getFieldDeep whether the programme should fetch inherited fields. When this parameter is true, this
-     *                     method becomes recursive.
-     * @param list initially an empty list, fields will be added to this list.
+     * Fetches all attributes that will be serialised into the JSON string. By default, this means every non-static
+     * field of an object. However, one may override {@link JSONSerialisable#jsonAttributes()} to explicitly denote
+     * each attribute that should be serialised.
+     * @param obj the object whose attributes are fetched.
+     * @param clazz class from which attributes are fetched (may be the class of obj, or superclasses of obj).
+     * @param list a list that will be mutated by this method to store the attributes.
+     * @param getFieldDeep whether inheritted fields should be serialised as attributes.
+     * @param <T> an arbitrary inheriter of {@link JSONSerialisable}.
+     * @see Attribute
      */
-    private static void getFields(Class<?> clazz, List<Field> list, boolean getFieldDeep){ //TODO make fields abstract
-
+    private static<T extends JSONSerialisable> void
+                                    getAttributes(T obj, Class<?> clazz, List<Attribute> list, boolean getFieldDeep){
         if(!getFieldDeep){
-            list.addAll(List.of(clazz.getDeclaredFields()));
+            if(clazz.equals(obj.getClass())) list.addAll(fetchFieldsAsAttributes(obj));
+            else list.addAll(fieldToAttributes(clazz.getDeclaredFields(), obj));
             return;
         }
 
         Class<?> superClass = clazz.getSuperclass();
-        getFields(clazz, list, false);
+        getAttributes(obj, clazz, list, false);
 
         //Base case
         if(superClass == null) return;
 
         //Inductive case
-        getFields(superClass, list, true);
+        getAttributes(obj, superClass, list, true);
+
     }
 
     /**
-     * Helper method to serialise a single item, which is either a field or another serialisable object.
+     * Helper method to serialise a single value, which is either the value to field or another serialisable object.
      * @param currSize current size of the indentation.
      * @param item the item to serialise.
      * @param sb current string builder used in the serialisation.
@@ -206,8 +247,7 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
             indent(sb, currSize + INDENT_SIZE, s -> s.append("]"));
 
         }
-        else
-            sb.append(wrap(item.toString()));
+        else sb.append(wrap(item.toString()));
     }
 
     private static void indent(StringBuilder sb, int indentSize, Consumer<StringBuilder> action){
