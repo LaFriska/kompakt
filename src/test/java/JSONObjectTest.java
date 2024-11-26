@@ -1,6 +1,7 @@
 import com.friska.AttributeNotFoundException;
 import com.friska.AttributeTypeException;
 import com.friska.JSONObject;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -78,45 +79,215 @@ public class JSONObjectTest {
         assertTrue(o.isEmpty());
     }
 
+    /**
+     * Tests equivalence for simple cases.
+     */
+    @Test
+    public void testEquivalenceTrivial(){
+
+        JSONObject empty1 = new JSONObject();
+        JSONObject empty2 = new JSONObject();
+        JSONObject triv1 = new JSONObject();
+        JSONObject triv2 = new JSONObject();
+        triv1.addAttribute("random", null);
+        triv2.addAttribute("random", null);
+
+        equalRigorous(empty1, empty2, true);
+        equalRigorous(empty1, triv2, false);
+        equalRigorous(triv1, triv2, true);
+        triv2.removeAttribute("random");
+        equalRigorous(triv1, triv2, false);
+    }
+
+    /**
+     * Tests equivalence for moderate cases.
+     */
     @Test
     public void testEquivalence(){
 
+        //Basic test
+
+        JSONObject child1 = new JSONObject();
+        child1.addAttribute("field1", "Blah");
+        child1.addAttribute("field2", 30);
+        child1.addAttribute("field3", null);
+
+        JSONObject child2 = new JSONObject();
+        child2.addAttribute("field1", "Blah");
+        child2.addAttribute("field2", 30);
+        child2.addAttribute("field3", null);
+
         JSONObject o1 = new JSONObject();
-        JSONObject c1 = new JSONObject();
-        c1.addAttribute("name", "Peter");
-        c1.addAttribute("age", 18);
-        c1.addAttribute("isEmployee", true);
-
-        o1.addAttribute("animal", "Cat");
-        o1.addAttribute("age", 5);
-        o1.addAttribute("adopted", false);
-        o1.addAttribute("children", new String[]{"child1", "child2", "child3"});
-        o1.addAttribute("zoo", null);
-        o1.addAttribute("caretaker", c1);
-
         JSONObject o2 = new JSONObject();
-        JSONObject c2 = new JSONObject();
-        c2.addAttribute("age", 18);
-        c2.addAttribute("isEmployee", true);
-        c2.addAttribute("name", "Peter");
 
-        o2.addAttribute("animal", "Cat");
-        o2.addAttribute("zoo", null);
-        o2.addAttribute("caretaker", c2);
-        o2.addAttribute("adopted", false);
-        o2.addAttribute("children", new String[]{"child1", "child2", "child3"});
-        o2.addAttribute("age", 5);
+        o1.addAttribute("parentField", true);
+        o2.addAttribute("parentField", true);
+        o1.addAttribute("child", child1);
+        o2.addAttribute("child", child2);
 
-        assertTrue(o1.equals(o2));
-        c2.removeAttribute("isEmployee");
-        assertFalse(o1.equals(o2));
-        c1.addAttribute("isEmployee", false);
-        assertFalse(o1.equals(o2));
-        c2.removeAttribute("isEmployee");
-        c1.addAttribute("isEmployee", true);
-        assertTrue(o1.equals(o2));
+        equalRigorous(child1, child2, true);
+        equalRigorous(o1, o2, true);
+
+        //Tests removal and add
+
+        child1.removeAttribute("field1");
+        equalRigorous(child1, child2, false);
+        equalRigorous(o1, o2, false);
+        child1.addAttribute("field1", "Blah");
+        equalRigorous(child1, child2, true);
+        equalRigorous(o1, o2, true);
+        child2.addAttribute("field4", null);
+        equalRigorous(child1, child2, false);
+        equalRigorous(o1, o2, false);
+
+        //Tests same field names but values differ
+        o1 = new JSONObject();
+        o2 = new JSONObject();
+        JSONObject o3 = new JSONObject();
+        JSONObject o4 = new JSONObject();
+
+        o1.addAttribute("field1", null);
+        o1.addAttribute("field2", 3.14);
+        o1.addAttribute("field3", true);
+        o1.addAttribute("field4", "Hello World!");
+
+        o2.addAttribute("field1", null);
+        o2.addAttribute("field2", 3.145);
+        o2.addAttribute("field3", true);
+        o2.addAttribute("field4", "Hello World!");
+        equalRigorous(o1, o2, false);
+
+        JSONObject childAlt = new JSONObject();
+        childAlt.addAttribute("field1", "Blah!");
+        childAlt.addAttribute("field2", 30);
+        childAlt.addAttribute("field3", null);
+
+        o1 = new JSONObject();
+        o1.addAttribute("field", "Hello World!");
+        o1.addAttribute("child", child1);
+        o2 = new JSONObject();
+        o2.addAttribute("field", "Hello World!");
+        o2.addAttribute("child", childAlt);
+
+        equalRigorous(o1, o2, false);
+
+        childAlt.removeAttribute("field1");
+        childAlt.addAttribute("field1", "Blah");
+
+        equalRigorous(o1, o2, true);
     }
 
+    /**
+     * Tests equivalence for complicated cases.
+     */
+    @Test
+    public void testEquivalenceComplicated() {
+
+        JSONObject o1 = new JSONObject();
+        o1.addAttribute("level1", "data1");
+
+        JSONObject o2 = new JSONObject();
+        o2.addAttribute("level1", "data1");
+
+        JSONObject complex1 = new JSONObject();
+        JSONObject complex2 = new JSONObject();
+
+        Object[] array1 = new Object[]{"one", 2, true, o1};
+        Object[] array2 = new Object[]{"one", 2, true, o2};
+
+        complex1.addAttribute("arrayField", array1);
+        complex2.addAttribute("arrayField", array2);
+        complex1.addAttribute("name", "Blah");
+        complex2.addAttribute("name", "Blah");
+
+        equalRigorous(o1, o2, true);
+        equalRigorous(complex1, complex2, true);
+
+        //modify one of the nested objects
+        o1.addAttribute("level2", "data2");
+        equalRigorous(o1, o2, false);
+        equalRigorous(complex1, complex2, false);
+
+        o2.addAttribute("level2", "data2");
+        equalRigorous(o1, o2, true);
+        equalRigorous(complex1, complex2, true);
+
+        //change an array element
+        array2[1] = 3; // Modify the integer in the array
+        equalRigorous(complex1, complex2, false);
+
+        array2[1] = 2; //revert the change
+        equalRigorous(complex1, complex2, true);
+
+        //add extra fields to the root objects
+        complex1.addAttribute("extraField", 123);
+        equalRigorous(complex1, complex2, false);
+
+        complex2.addAttribute("extraField", 123);
+        equalRigorous(complex1, complex2, true);
+
+        //test deeply nested structures
+        JSONObject deepNested1 = new JSONObject();
+        JSONObject deepNested2 = new JSONObject();
+        JSONObject middle1 = new JSONObject();
+        JSONObject middle2 = new JSONObject();
+
+        middle1.addAttribute("middleLevel", o1);
+        middle2.addAttribute("middleLevel", o2);
+        deepNested1.addAttribute("deepLevel", middle1);
+        deepNested2.addAttribute("deepLevel", middle2);
+
+        equalRigorous(deepNested1, deepNested2, true);
+
+        //change a deep nested value
+        o1.addAttribute("uniqueField", "uniqueValue");
+        equalRigorous(deepNested1, deepNested2, false);
+
+        o2.addAttribute("uniqueField", "uniqueValue");
+        equalRigorous(deepNested1, deepNested2, true);
+
+        //arrays of objects with different orders
+        Object[] array3 = new Object[]{o1, middle1, "randomValue"};
+        Object[] array4 = new Object[]{middle1, o1, "randomValue"};
+
+        JSONObject orderSensitive1 = new JSONObject();
+        JSONObject orderSensitive2 = new JSONObject();
+
+        orderSensitive1.addAttribute("sensitiveArray", array3);
+        orderSensitive2.addAttribute("sensitiveArray", array4);
+
+        equalRigorous(orderSensitive1, orderSensitive2, false);
+
+        //ensure adding/removing attributes in deeply nested structures reflects properly
+        middle1.addAttribute("additionalData", 42);
+        equalRigorous(deepNested1, deepNested2, false);
+
+        middle2.addAttribute("additionalData", 42);
+        equalRigorous(deepNested1, deepNested2, true);
+    }
+
+
+    /**
+     * Given two instances of {@link JSONObject} tests if they are equal both ways, and tests their equivalence on
+     * themselves.
+     * @param areEqual whether the two objects are expected to be equal.
+     */
+    private void equalRigorous(@NotNull JSONObject o1, @NotNull JSONObject o2, boolean areEqual){
+        assertTrue(o1.equals(o1));
+        assertTrue(o2.equals(o2));
+        if(areEqual){
+            assertTrue(o1.equals(o2));
+            assertTrue(o2.equals(o1));
+        }else{
+            assertFalse(o1.equals(o2));
+            assertFalse(o2.equals(o1));
+        }
+    }
+
+
+    /**
+     * Tests retrieving values of the right type.
+     */
     @Test
     public void testTypes(){
 
@@ -133,6 +304,49 @@ public class JSONObjectTest {
         o.addAttribute("zoo", null);
         o.addAttribute("caretaker", careTaker);
 
+        //Types are correct
+        assertEquals("Cat", o.getString("animal"));
+        assertEquals(5, o.getNumber("age"));
+        assertEquals(false, o.getBool("adopted"));
+        assertEqualsArray(new String[]{"child1", "child2", "child3"}, o.getArray("children"));
+        assertNull(o.getNumber("zoo"));
+        assertNull(o.getString("zoo"));
+        assertNull(o.getJSONObject("zoo"));
+        assertNull(o.getBool("zoo"));
+        assertEquals(careTaker, o.getJSONObject("caretaker"));
+
+        //Types are wrong
+        assertThrows(AttributeTypeException.class, () -> o.getString("age"));
+        assertThrows(AttributeTypeException.class, () -> o.getString("adopted"));
+        assertThrows(AttributeTypeException.class, () -> o.getString("children"));
+
+        assertThrows(AttributeTypeException.class, () -> o.getNumber("adopted"));
+        assertThrows(AttributeTypeException.class, () -> o.getNumber("animal"));
+        assertThrows(AttributeTypeException.class, () -> o.getNumber("caretaker"));
+
+        assertThrows(AttributeTypeException.class, () -> o.getBool("animal"));
+        assertThrows(AttributeTypeException.class, () -> o.getBool("age"));
+        assertThrows(AttributeTypeException.class, () -> o.getBool("children"));
+
+        assertThrows(AttributeTypeException.class, () -> o.getArray("age"));
+        assertThrows(AttributeTypeException.class, () -> o.getArray("adopted"));
+        assertThrows(AttributeTypeException.class, () -> o.getArray("caretaker"));
+
+        assertThrows(AttributeTypeException.class, () -> o.getJSONObject("age"));
+        assertThrows(AttributeTypeException.class, () -> o.getJSONObject("adopted"));
+        assertThrows(AttributeTypeException.class, () -> o.getJSONObject("animal"));
+
+
+        System.out.println(o.serialise());
+
+    }
+
+    public void assertEqualsArray(Object[] expected, Object[] actual){
+        if(expected == null && actual == null) return;
+        if(expected == null || actual == null) fail();
+        if(actual.length != expected.length) fail();
+        for (int i = 0; i < actual.length; i++)
+            if(!expected[i].equals(actual[i])) fail();
     }
 
 }

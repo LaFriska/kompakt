@@ -204,13 +204,13 @@ public class JSONObject implements JSONSerialisable{
         //Checks equivalence between values.
         for (Attribute a : attributeList){
             Object o1 = this.getItem(a.name());
-            Object o2 = this.getItem(a.name());
+            Object o2 = jsonObject.getItem(a.name());
 
             if(o1 != null && o2 == null)
                 return false;
             if(o1 == null && o2 != null)
                 return false;
-            if(o1 != null){
+            if(o1 != null){ //Both not null
                 if(o1.getClass().isArray() && o2.getClass().isArray()){
                     Object[] arr1 = (Object[]) o1;
                     Object[] arr2 = (Object[]) o2;
