@@ -5,6 +5,21 @@ package com.friska;
  */
 public class JSONDeserialiser {
 
+    private final String originalString;
+
+    protected JSONDeserialiser(String jsonString){
+        this.originalString = jsonString;
+    }
+
+    private JSONObject deserialise(){
+        String code = deleteSurroundingWhitespace(originalString);
+        return null; //TODO
+    }
+
+    public static JSONObject deserialise(String jsonString){
+        return new JSONDeserialiser(jsonString).deserialise();
+    }
+
 
     /**
      * Simple recursive function used to remove delete whitespace characters surrounding a string.
