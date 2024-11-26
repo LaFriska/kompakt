@@ -335,10 +335,6 @@ public class JSONObjectTest {
         assertThrows(AttributeTypeException.class, () -> o.getJSONObject("age"));
         assertThrows(AttributeTypeException.class, () -> o.getJSONObject("adopted"));
         assertThrows(AttributeTypeException.class, () -> o.getJSONObject("animal"));
-
-
-        System.out.println(o.serialise());
-
     }
 
     public void assertEqualsArray(Object[] expected, Object[] actual){
