@@ -1,4 +1,4 @@
-package com.friska;
+package com.friska.exceptions;
 
 public class AttributeNotFoundException extends RuntimeException{ //TODO javadoc
 

@@ -1,4 +1,4 @@
-package com.friska;
+package com.friska.exceptions;
 
 public class AttributeTypeException extends RuntimeException{ //TODO javadoc
 

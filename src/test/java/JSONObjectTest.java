@@ -1,5 +1,5 @@
-import com.friska.AttributeNotFoundException;
-import com.friska.AttributeTypeException;
+import com.friska.exceptions.AttributeNotFoundException;
+import com.friska.exceptions.AttributeTypeException;
 import com.friska.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;

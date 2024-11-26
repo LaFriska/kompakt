@@ -1,5 +1,7 @@
 package com.friska;
 
+import com.friska.exceptions.AttributeNotFoundException;
+import com.friska.exceptions.AttributeTypeException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
