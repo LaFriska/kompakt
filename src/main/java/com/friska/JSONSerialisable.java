@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static com.friska.JSONSettings.*;
+import static com.friska.JSONStandards.*;
 
 /**
  * Classes implementing this interface allows Kompakt to search through field variables and serialise them into a
