@@ -17,8 +17,6 @@ public class JSONDeserialiser {
      */
     private static final HashMap<Character, Character> ESCAPE_CHARS;
 
-    private static final HashSet<Character> HEX_DIGITS;
-
     static{
         ESCAPE_CHARS = new HashMap<>();
         ESCAPE_CHARS.put('\"', '\"');
@@ -30,24 +28,6 @@ public class JSONDeserialiser {
         ESCAPE_CHARS.put('r', '\r');
         ESCAPE_CHARS.put('t', '\t');
         ESCAPE_CHARS.put('u', 'u');
-
-        HEX_DIGITS = new HashSet<>();
-        HEX_DIGITS.add('1');
-        HEX_DIGITS.add('2');
-        HEX_DIGITS.add('3');
-        HEX_DIGITS.add('4');
-        HEX_DIGITS.add('5');
-        HEX_DIGITS.add('6');
-        HEX_DIGITS.add('7');
-        HEX_DIGITS.add('8');
-        HEX_DIGITS.add('9');
-        HEX_DIGITS.add('0');
-        HEX_DIGITS.add('a');
-        HEX_DIGITS.add('b');
-        HEX_DIGITS.add('c');
-        HEX_DIGITS.add('d');
-        HEX_DIGITS.add('e');
-        HEX_DIGITS.add('f');
     }
 
     private final String originalString;
@@ -135,7 +115,7 @@ public class JSONDeserialiser {
             else if(Character.isISOControl(c))
                 throw new IllegalArgumentException("Unexpected control character.");
             else if(c == '\\'){
-                Character val = safeFetch(value, i);
+                Character val = safeFetch(value, i+1);
                 if(val == null)
                     throw new IllegalArgumentException("Erroneous use of the escape lateral.");
                 if(val.equals('u')){
@@ -163,7 +143,7 @@ public class JSONDeserialiser {
 
     private static Character toChar(@NotNull String hex){
         try{
-            int c = Integer.parseInt(hex);
+            int c = Integer.parseInt(hex, 16);
             return (char) c;
         }catch (NumberFormatException e){
             return null;
