@@ -1,11 +1,11 @@
-import com.friska.JSONStandards;
+import com.friska.JSONUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static com.friska.JSONStandards.sanitiseString;
+import static com.friska.JSONUtils.sanitiseString;
 
 /**
- * This class tests the method {@link JSONStandards#sanitiseString(String)}.
+ * This class tests the method {@link JSONUtils#sanitiseString(String)}.
  */
 public class SanitiseStringTest {
 
@@ -89,8 +89,6 @@ public class SanitiseStringTest {
                 """;
         String a1 = """
                 Entry 5 \\\\\\\\ \\"Contradiction\\" \\n\\n.\\u0000\\r%\\u001F.\\\\n.\\n""";
-        System.out.println(sanitiseString(t1));
-        System.out.println(a1);
         test(a1, t1);
     }
 

@@ -4,12 +4,12 @@ package com.friska;
  * This class holds a variety of settings and configurations for JSON serialisation, there are also utiliy methods
  * relating to the JSON standard for the programme to ensure every detail is correctly implemented.
  */
-public class JSONStandards {
+public class JSONUtils {
 
     /**
      * The size of indentation in the resulting JSON string.
      */
-    static int INDENT_SIZE = 2;
+    protected static int INDENT_SIZE = 2;
 
     /**
      * Sanitises a string by escaping control characters, quotation marks, or dealing with control characters, such that

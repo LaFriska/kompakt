@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static com.friska.JSONStandards.*;
+import static com.friska.JSONUtils.*;
 
 /**
  * Classes implementing this interface allows Kompakt to search through field variables and serialise them into a
@@ -261,9 +261,9 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
         else
             if(indentAlways)
                 indent(sb, currSize + INDENT_SIZE,
-                        s -> s.append(wrap(JSONStandards.sanitiseString(item.toString()))));
+                        s -> s.append(wrap(JSONUtils.sanitiseString(item.toString()))));
             else
-                sb.append(wrap(JSONStandards.sanitiseString(item.toString())));
+                sb.append(wrap(JSONUtils.sanitiseString(item.toString())));
     }
 
     private static void indent(StringBuilder sb, int indentSize, Consumer<StringBuilder> action){
