@@ -260,9 +260,10 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
         }
         else
             if(indentAlways)
-                indent(sb, currSize + INDENT_SIZE, s -> s.append(wrap(item.toString())));
+                indent(sb, currSize + INDENT_SIZE,
+                        s -> s.append(wrap(JSONStandards.sanitiseString(item.toString()))));
             else
-                sb.append(wrap(item.toString()));
+                sb.append(wrap(JSONStandards.sanitiseString(item.toString())));
     }
 
     private static void indent(StringBuilder sb, int indentSize, Consumer<StringBuilder> action){
