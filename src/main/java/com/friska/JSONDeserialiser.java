@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * This class provides all tools in order to deserialise any arbitrary JSON-string to an instance of {@link JSONObject}.
@@ -17,6 +18,8 @@ public class JSONDeserialiser {
      */
     private static final HashMap<Character, Character> ESCAPE_CHARS;
 
+    private static final HashSet<Character> DIGITS;
+
     static{
         ESCAPE_CHARS = new HashMap<>();
         ESCAPE_CHARS.put('\"', '\"');
@@ -28,6 +31,9 @@ public class JSONDeserialiser {
         ESCAPE_CHARS.put('r', '\r');
         ESCAPE_CHARS.put('t', '\t');
         ESCAPE_CHARS.put('u', 'u');
+
+        DIGITS = new HashSet<>();
+        DIGITS.addAll(List.of(new Character[]{'1','2','3','4','5','6','7','8','9','0'}));
     }
 
     private final String originalString;
@@ -58,6 +64,72 @@ public class JSONDeserialiser {
         if(Character.isWhitespace(str.charAt(str.length() - 1)))
             return deleteSurroundingWhitespace(str.substring(0, str.length() - 1));
         return str;
+    }
+
+    public static Number parseNumber(@NotNull String value){
+        return null; //TODO
+    }
+
+    private static boolean isJSONInteger(@NotNull String value){
+
+        //Non-empty check
+        if(value.isEmpty())
+            return false;
+
+        //Recursively ignore a minus sign.
+        if(value.charAt(0) == '-')
+            return isJSONInteger(value.substring(1));
+
+        //If single character, return if it is a digit.
+        if(value.length() == 1)
+            return DIGITS.contains(value.charAt(0));
+
+        //Otherwise 0 cannot be the leading character.
+        if(value.charAt(0) == '0') return false;
+
+        return isJSONDigits(value);
+    }
+
+    private static boolean isJSONFraction(@NotNull String value){
+        if(value.isEmpty()) return true;
+        if(value.charAt(0) != '.') return false;
+        return isJSONDigits(value.substring(1));
+    }
+
+    private static boolean isJSONExponent(@NotNull String value){
+        if(value.isEmpty()) return true;
+        if(value.length() < 2) return false;
+        if(value.charAt(0) != 'e' && value.charAt(0) != 'E') return false;
+        if(isSign(value.charAt(1))){
+            if(value.length() < 3) return false;
+            return isJSONDigits(value.substring(2));
+        }else{
+            return isJSONDigits(value.substring(1));
+        }
+    }
+
+    private static boolean isJSONDigits(@NotNull String value){
+        if(value.isEmpty()) return false;
+        for(int i = 0; i < value.length(); i++)
+            if(!DIGITS.contains(value.charAt(i))) return false;
+        return true;
+    }
+
+    private static boolean isSign(char c){
+        return c == '+' || c == '-';
+    }
+
+    /**
+     * Deserialises a JSON representation of a boolean, either "true" or "false" and encodes into a Java boolean value.
+     * @param value string representation of the boolean.
+     * @return a boolean represented by the string.
+     * @throws IllegalArgumentException if the string value is not "true", "false", or "null".
+     */
+    public static Boolean parseBool(@NotNull String value){
+        if(value.equals("true")) return true;
+        if(value.equals("false")) return false;
+        if(value.equals("null")) return null;
+        throw new IllegalArgumentException("A JSON boolean value must either be \"true\", \"false\", or \"null\".");
     }
 
     /**
