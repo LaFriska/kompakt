@@ -141,6 +141,12 @@ public class JSONDeserialiser {
         return sb.toString();
     }
 
+    /**
+     * Converts a string of hexadecimal digits to a character.
+     * @param hex hex string.
+     * @return A char represented by the unicode represented by the hex string, or null if the
+     * string is formatted incorrectly.
+     */
     private static Character toChar(@NotNull String hex){
         try{
             int c = Integer.parseInt(hex, 16);
@@ -150,9 +156,12 @@ public class JSONDeserialiser {
         }
     }
 
-    private static Character safeFetch(String value, int index){
-        if(index >= value.length() - 1 || index < 0) return null;
-        char c = value.charAt(index);
+    /**
+     * Fetches a character from a string safely. If the index is out of bounded, returns null.
+     */
+    private static Character safeFetch(String str, int index){
+        if(index >= str.length() - 1 || index < 0) return null;
+        char c = str.charAt(index);
         if(ESCAPE_CHARS.containsKey(c)){
             return ESCAPE_CHARS.get(c);
         }
