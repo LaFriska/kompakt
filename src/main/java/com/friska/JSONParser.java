@@ -1,6 +1,7 @@
 package com.friska;
 
 import com.friska.exceptions.IllegalTypeException;
+import com.friska.exceptions.InvalidJSONStringException;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
@@ -38,22 +39,6 @@ public class JSONParser {
         DIGITS.addAll(List.of(new Character[]{'1','2','3','4','5','6','7','8','9','0'}));
     }
 
-    private final String originalString;
-
-    protected JSONParser(String jsonString){
-        this.originalString = jsonString;
-    }
-
-    private JSONObject deserialise(){
-        String code = deleteSurroundingWhitespace(originalString);
-        return null; //TODO
-    }
-
-    public static JSONObject deserialise(String jsonString){
-        return new JSONParser(jsonString).deserialise();
-    }
-
-
     /**
      * Simple recursive function used to remove delete whitespace characters surrounding a string.
      * @param str input string.
@@ -66,6 +51,32 @@ public class JSONParser {
         if(Character.isWhitespace(str.charAt(str.length() - 1)))
             return deleteSurroundingWhitespace(str.substring(0, str.length() - 1));
         return str;
+    }
+
+    /**
+     * In JSON, a value is a segment of data either represented by the entire JSON string, or stored inside an object
+     * or an array. A value is either an object, array, string, number, boolean, or null. This method takes a string
+     * input representing a value and deserialises it into an arbitrary {@link Object} of the aforementioned types.
+     * Since this method may require parsing objects and arrays, which are defined using the definition of a value, this
+     * method is in mutual recursion with {@link JSONParser#parseObject(String)} and {@link JSONParser#parseArray(String)}.
+     * @param value string representation of the value.
+     * @param type number type for number values or sub-values.
+     * @return If the value represents an object, an instance of {@link JSONObject} is returned. If it represents an array, then
+     *         an {@link Object} array is returned. For numbers, either one of the four children of {@link Number} represented
+     *         by the enumerator {@link NumberType} is used as the return type.
+     * @throws InvalidJSONStringException if the input string does not represent a JSON value.
+     * @throws IllegalTypeException if the input string represents a number but cannot be converted to the specified type.
+     */
+    public static Object parseValue(@NotNull String value, @NotNull NumberType type){
+        return null; //TODO
+    }
+
+    public static JSONObject parseObject(@NotNull String value){
+        return null; //TODO
+    }
+
+    public static Object[] parseArray(@NotNull String value){
+        return null; //TODO
     }
 
     /**
