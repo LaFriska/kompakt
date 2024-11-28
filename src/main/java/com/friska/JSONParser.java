@@ -82,22 +82,48 @@ public class JSONParser {
      */
     public static Number parseNumber(@NotNull String value, @NotNull NumberType type){
 
+        if(value.equals("null")) return null;
+
         //Hurdles to check if value is a valid number
         String err = "Input string does not represent a JSON number.";
-        String[] dotSplit = value.split("\\.");
-        if(!isInteger(dotSplit[0])) throw new IllegalArgumentException(err);
-        if(dotSplit.length > 2) throw new IllegalArgumentException(err);
-        if(dotSplit.length == 2){
-            String[] eSplit = value.split("e|E");
-            if(!isFraction('.' + eSplit[0]))
-                throw new IllegalArgumentException(err);
-            if(eSplit.length > 2) throw new IllegalArgumentException(err);
-            if(eSplit.length == 2){
-                if(!isExponent(eSplit[1]))
-                    throw new IllegalArgumentException(err);
+        int intEnd = value.length();
+        for(int i = 0; i < value.length(); i++){
+            if(value.charAt(i) == '.' || value.charAt(i) == 'e' || value.charAt(i) == 'E'){
+                intEnd = i;
+                break;
             }
         }
+        if(!isInteger(value.substring(0, intEnd)))
+            throw new IllegalArgumentException(err);
 
+        if(!isExponent(value.substring(intEnd))) {
+            int fracEnd = value.length();
+            for (int i = intEnd; i < value.length(); i++) {
+                if (value.charAt(i) == 'e' || value.charAt(i) == 'E') {
+                    fracEnd = i;
+                    break;
+                }
+            }
+            if (!isFraction(value.substring(intEnd, fracEnd)))
+                throw new IllegalArgumentException(err);
+            if (!isExponent(value.substring(fracEnd)))
+                throw new IllegalArgumentException(err);
+        }
+
+//        String[] dotSplit = value.split("\\.");
+//        if(!isInteger(dotSplit[0])) throw new IllegalArgumentException(err);
+//        if(dotSplit.length > 2) throw new IllegalArgumentException(err);
+//        if(dotSplit.length == 2){
+//            String[] eSplit = dotSplit[1].split("e|E");
+//            if(!isFraction('.' + eSplit[0]))
+//                throw new IllegalArgumentException(err);
+//            if(eSplit.length > 2) throw new IllegalArgumentException(err);
+//            if(eSplit.length == 2){
+//                if(!isExponent(eSplit[1]))
+//                    throw new IllegalArgumentException(err);
+//            }
+//        }
+//        if(value.endsWith(".")) throw new IllegalArgumentException(err);
         //Conversion of number
         try{
             Number res = switch(type){
