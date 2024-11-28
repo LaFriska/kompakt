@@ -2,6 +2,8 @@ import com.friska.JSONParser;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 import static com.friska.JSONParser.parseString;
 
@@ -175,6 +177,48 @@ public class StringParserTest {
                         "*@(\\\\\\\\\\\\\\\\O\\\"\\\"\\\\u0001W\\u0000I\\\\\\\"\\\"f\\f\\f\\f\\f\\f\\n\\f\\b\\b\\bh@" +
                         "(B@OIbobOF\\\\O*O@BFOBOCIO@BLIF\""
         );
+    }
+
+    /**
+     * Test case for {@link JSONParser#safeSplit(String, char)}.
+     */
+    @Test
+    public void stringSplitTest(){
+        char c = ',';
+        testSplit("Hello World!", c, "Hello World!");
+        testSplit("Hello,World!", c, "Hello", "World!");
+        testSplit("a,b,c,d,e,f,g", c, "a", "b", "c", "d", "e", "f", "g");
+        testSplit("a,b,c,d,e,f,g,", c, "a", "b", "c", "d", "e", "f", "g", "");
+        testSplit(",,,", c, "", "", "", "");
+        testSplit("", c, "");
+        testSplit("\"Hello,World!", c, "\"Hello,World!");
+        testSplit("\"Hello\",World!", c, "\"Hello\"", "World!");
+        testSplit("\"Hello \\\"World\\\"\"", c, "\"Hello \\\"World\\\"\"");
+        testSplit("\"Hello\",\"\\\"World\\\"\"", c, "\"Hello\"", "\"\\\"World\\\"\"");
+        testSplit("\"A \\\"quoted\\\" word, here\"", c, "\"A \\\"quoted\\\" word, here\"");
+        testSplit("\"Hello\",World,\"!\"", c, "\"Hello\"", "World", "\"!\"");
+        testSplit("\"Hello,World\",Test", c, "\"Hello,World\"", "Test");
+        testSplit("Test,\"Hello,World\"", c, "Test", "\"Hello,World\"");
+        testSplit("\"A \\\"complex, literal\\\"\",Another,\"Entry,here\"", c,
+                "\"A \\\"complex, literal\\\"\"", "Another", "\"Entry,here\"");
+        testSplit("\"Escaped\\\\,Comma\",\"Normal\",Text", c,
+                "\"Escaped\\\\,Comma\"", "\"Normal\"", "Text");
+        testSplit("\"Ends with escape\\\\\",Next", c, "\"Ends with escape\\\\\"", "Next");
+        testSplit(",Leading", c, "", "Leading");
+        testSplit("Trailing,", c, "Trailing", "");
+        testSplit(",Both,", c, "", "Both", "");
+        testSplit("\"Hello\\\\World\",\"Test\\\\\"", c, "\"Hello\\\\World\"", "\"Test\\\\\"");
+        testSplit("\"Escape\\\\,Comma\",\"Escaped\\\\\\\"Quote\\\"\"", c,
+                "\"Escape\\\\,Comma\"", "\"Escaped\\\\\\\"Quote\\\"\"");
+        testSplit("\"The Q\\\"ui,c,k, B,ro\\\"w,n \\\" F,ox \\\" Jum\\\"ped o\\\"v,er\\\\\"The quick,BrownFox",
+                c, "\"The Q\\\"ui,c,k, B,ro\\\"w,n \\\" F,ox \\\" Jum\\\"ped o\\\"v,er\\\\\"The quick",
+                "BrownFox");
+    }
+
+    private void testSplit(String toSplit, char c, String... expected){
+        String[] actual = JSONParser.safeSplit(toSplit, c);
+        assertTrue("\nExpected: " + Arrays.toString(expected) + "\nActual: " +
+                Arrays.toString(actual), Arrays.deepEquals(expected, actual));
     }
 
     private void test(String actual, String toParse){

@@ -5,6 +5,7 @@ import com.friska.exceptions.InvalidJSONStringException;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -96,6 +97,7 @@ public class JSONParser {
      * In JSON, a member is a representation of a key-value pair: some number of whitespace surrounding a string,
      * then a colon, and a value surrounded by an arbitrary number of whitespace. This method takes a JSON-string
      * representation of a member and converts it to an {@link Attribute}.
+     * For more information, please refer to <a href="https://www.json.org/json-en.html">the JSON documentations.</a>.
      * @param value string representation of a member.
      * @return an attribute holding information on the key-value pair.
      * @throws IllegalArgumentException if the string is syntactically incorrect, or that the value of the key-value
@@ -104,6 +106,34 @@ public class JSONParser {
     public static @NotNull Attribute parseMember(@NotNull String value){
         return new Attribute("", null); //TODO
     }
+
+    /**
+     * Splits the string into a string array, cutting it whenever a char is encountered. This method is also string-safe,
+     * that is, if the char is wrapped inside JSON-strings, then it should be ignored. This works in similar fashion to
+     * {@link String#split(String)}.
+     * @param value string to be split.
+     * @param split the character that splits the string.
+     * @return a string array representing the split.
+     */
+    public static String[] safeSplit(@NotNull String value, char split){
+
+        boolean insideString = false;
+        ArrayList<String> list = new ArrayList<>();
+        int current = 0;
+
+        for(int i = 0; i < value.length(); i++){
+            char c = value.charAt(i);
+            if(c == '\"') insideString = !insideString;
+            if(c == '\\' && insideString) i++;
+            if(!insideString && c == split){
+                list.add(value.substring(current, i));
+                current = i+1;
+            }
+        }
+        list.add(value.substring(current));
+        return list.toArray(new String[0]);
+    }
+
 
     /**
      * In JSON, a number is defined as an integer followed by a fraction and then an exponent. See the definition
