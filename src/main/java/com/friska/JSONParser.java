@@ -109,22 +109,6 @@ public class JSONParser {
             if (!isExponent(value.substring(fracEnd)))
                 throw new IllegalArgumentException(err);
         }
-
-//        String[] dotSplit = value.split("\\.");
-//        if(!isInteger(dotSplit[0])) throw new IllegalArgumentException(err);
-//        if(dotSplit.length > 2) throw new IllegalArgumentException(err);
-//        if(dotSplit.length == 2){
-//            String[] eSplit = dotSplit[1].split("e|E");
-//            if(!isFraction('.' + eSplit[0]))
-//                throw new IllegalArgumentException(err);
-//            if(eSplit.length > 2) throw new IllegalArgumentException(err);
-//            if(eSplit.length == 2){
-//                if(!isExponent(eSplit[1]))
-//                    throw new IllegalArgumentException(err);
-//            }
-//        }
-//        if(value.endsWith(".")) throw new IllegalArgumentException(err);
-        //Conversion of number
         try{
             Number res = switch(type){
                 case INT -> Integer.parseInt(value);
