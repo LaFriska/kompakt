@@ -59,16 +59,29 @@ public class JSONParser {
      * input representing a value and deserialises it into an arbitrary {@link Object} of the aforementioned types.
      * Since this method may require parsing objects and arrays, which are defined using the definition of a value, this
      * method is in mutual recursion with {@link JSONParser#parseObject(String)} and {@link JSONParser#parseArray(String)}.
+     * For more information, please refer to <a href="https://www.json.org/json-en.html">the JSON documentations.</a>
      * @param value string representation of the value.
      * @param type number type for number values or sub-values.
      * @return If the value represents an object, an instance of {@link JSONObject} is returned. If it represents an array, then
      *         an {@link Object} array is returned. For numbers, either one of the four children of {@link Number} represented
      *         by the enumerator {@link NumberType} is used as the return type.
-     * @throws InvalidJSONStringException if the input string does not represent a JSON value.
+     * @throws IllegalArgumentException if the input string does not represent a JSON value.
      * @throws IllegalTypeException if the input string represents a number but cannot be converted to the specified type.
      */
     public static Object parseValue(@NotNull String value, @NotNull NumberType type){
-        return null; //TODO
+        if(value.isEmpty()) throw new IllegalArgumentException("Expected JSON value.");
+        if(value.equals("null")) return null;
+        if(value.startsWith("\"")) return parseString(value);
+        if(value.startsWith("{")) return parseObject(value);
+        if(value.startsWith("[")) return parseArray(value);
+        try{
+            return parseNumber(value, type);
+        }catch(IllegalArgumentException ignored){}
+        try{
+            return parseBool(value);
+        }catch (IllegalArgumentException e){
+            throw new IllegalArgumentException("Unexpected representation of a JSON value: " + value);
+        }
     }
 
     public static JSONObject parseObject(@NotNull String value){
@@ -77,6 +90,19 @@ public class JSONParser {
 
     public static Object[] parseArray(@NotNull String value){
         return null; //TODO
+    }
+
+    /**
+     * In JSON, a member is a representation of a key-value pair: some number of whitespace surrounding a string,
+     * then a colon, and a value surrounded by an arbitrary number of whitespace. This method takes a JSON-string
+     * representation of a member and converts it to an {@link Attribute}.
+     * @param value string representation of a member.
+     * @return an attribute holding information on the key-value pair.
+     * @throws IllegalArgumentException if the string is syntactically incorrect, or that the value of the key-value
+     * pair is syntactically incorrect.
+     */
+    public static @NotNull Attribute parseMember(@NotNull String value){
+        return new Attribute("", null); //TODO
     }
 
     /**
