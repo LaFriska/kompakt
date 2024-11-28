@@ -1,5 +1,5 @@
 import com.friska.exceptions.AttributeNotFoundException;
-import com.friska.exceptions.AttributeTypeException;
+import com.friska.exceptions.IllegalTypeException;
 import com.friska.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
@@ -63,9 +63,9 @@ public class JSONObjectTest {
         assertNull(o.getArray("nullableAttribute"));
 
         //Test invalid type access
-        assertThrows(AttributeTypeException.class, () -> o.getString("age")); // age is not String
-        assertThrows(AttributeTypeException.class, () -> o.getBool("age"));   // age is not a Boolean
-        assertThrows(AttributeTypeException.class, () -> o.getArray("age"));  // age is not an Array
+        assertThrows(IllegalTypeException.class, () -> o.getString("age")); // age is not String
+        assertThrows(IllegalTypeException.class, () -> o.getBool("age"));   // age is not a Boolean
+        assertThrows(IllegalTypeException.class, () -> o.getArray("age"));  // age is not an Array
 
         // est object validity after multiple operations
         assertFalse(o.isEmpty());
@@ -316,25 +316,25 @@ public class JSONObjectTest {
         assertEquals(careTaker, o.getJSONObject("caretaker"));
 
         //Types are wrong
-        assertThrows(AttributeTypeException.class, () -> o.getString("age"));
-        assertThrows(AttributeTypeException.class, () -> o.getString("adopted"));
-        assertThrows(AttributeTypeException.class, () -> o.getString("children"));
+        assertThrows(IllegalTypeException.class, () -> o.getString("age"));
+        assertThrows(IllegalTypeException.class, () -> o.getString("adopted"));
+        assertThrows(IllegalTypeException.class, () -> o.getString("children"));
 
-        assertThrows(AttributeTypeException.class, () -> o.getNumber("adopted"));
-        assertThrows(AttributeTypeException.class, () -> o.getNumber("animal"));
-        assertThrows(AttributeTypeException.class, () -> o.getNumber("caretaker"));
+        assertThrows(IllegalTypeException.class, () -> o.getNumber("adopted"));
+        assertThrows(IllegalTypeException.class, () -> o.getNumber("animal"));
+        assertThrows(IllegalTypeException.class, () -> o.getNumber("caretaker"));
 
-        assertThrows(AttributeTypeException.class, () -> o.getBool("animal"));
-        assertThrows(AttributeTypeException.class, () -> o.getBool("age"));
-        assertThrows(AttributeTypeException.class, () -> o.getBool("children"));
+        assertThrows(IllegalTypeException.class, () -> o.getBool("animal"));
+        assertThrows(IllegalTypeException.class, () -> o.getBool("age"));
+        assertThrows(IllegalTypeException.class, () -> o.getBool("children"));
 
-        assertThrows(AttributeTypeException.class, () -> o.getArray("age"));
-        assertThrows(AttributeTypeException.class, () -> o.getArray("adopted"));
-        assertThrows(AttributeTypeException.class, () -> o.getArray("caretaker"));
+        assertThrows(IllegalTypeException.class, () -> o.getArray("age"));
+        assertThrows(IllegalTypeException.class, () -> o.getArray("adopted"));
+        assertThrows(IllegalTypeException.class, () -> o.getArray("caretaker"));
 
-        assertThrows(AttributeTypeException.class, () -> o.getJSONObject("age"));
-        assertThrows(AttributeTypeException.class, () -> o.getJSONObject("adopted"));
-        assertThrows(AttributeTypeException.class, () -> o.getJSONObject("animal"));
+        assertThrows(IllegalTypeException.class, () -> o.getJSONObject("age"));
+        assertThrows(IllegalTypeException.class, () -> o.getJSONObject("adopted"));
+        assertThrows(IllegalTypeException.class, () -> o.getJSONObject("animal"));
     }
 
     public void assertEqualsArray(Object[] expected, Object[] actual){

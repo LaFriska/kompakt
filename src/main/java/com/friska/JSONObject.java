@@ -1,7 +1,7 @@
 package com.friska;
 
 import com.friska.exceptions.AttributeNotFoundException;
-import com.friska.exceptions.AttributeTypeException;
+import com.friska.exceptions.IllegalTypeException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -95,14 +95,14 @@ public class JSONObject implements JSONSerialisable{
      * Returns an object associated by a name with type {@link String}.
      * @param name name of the object.
      * @throws AttributeNotFoundException if no value associated with the given name is found.
-     * @throws AttributeTypeException if the object associated with the name is non-null and
+     * @throws IllegalTypeException if the object associated with the name is non-null and
      *                                does not inherit the right type.
      */
     public @Nullable String getString(@NotNull String name){
         Object o = getItem(name);
         if(o == null) return null;
         if(!(o instanceof String s))
-            throw new AttributeTypeException("Attribute identified by \"" + name + "\" is not of type String.");
+            throw new IllegalTypeException("Attribute identified by \"" + name + "\" is not of type String.");
         return s;
     }
 
@@ -110,14 +110,14 @@ public class JSONObject implements JSONSerialisable{
      * Returns an object associated by a name with type {@link Boolean}.
      * @param name name of the object.
      * @throws AttributeNotFoundException if no value associated with the given name is found.
-     * @throws AttributeTypeException if the object associated with the name is non-null and does not inherit the
+     * @throws IllegalTypeException if the object associated with the name is non-null and does not inherit the
      *                                right type.
      */
     public @Nullable Boolean getBool(@NotNull String name){
         Object o = getItem(name);
         if(o == null) return null;
         if(!(o instanceof Boolean b))
-            throw new AttributeTypeException("Attribute identified by \"" + name + "\" is not of type Boolean.");
+            throw new IllegalTypeException("Attribute identified by \"" + name + "\" is not of type Boolean.");
         return b;
     }
 
@@ -125,14 +125,14 @@ public class JSONObject implements JSONSerialisable{
      * Returns an object associated by a name that inherits {@link JSONObject}.
      * @param name name of the object.
      * @throws AttributeNotFoundException if no value associated with the given name is found.
-     * @throws AttributeTypeException if the object associated with the name is non-null and does not inherit
+     * @throws IllegalTypeException if the object associated with the name is non-null and does not inherit
      *                                the right type.
      */
     public @Nullable JSONObject getJSONObject(@NotNull String name){
         Object o = getItem(name);
         if(o == null) return null;
         if(!(o instanceof JSONObject j))
-            throw new AttributeTypeException("Attribute identified by \"" + name + "\" is not of type JSONObject.");
+            throw new IllegalTypeException("Attribute identified by \"" + name + "\" is not of type JSONObject.");
         return j;
     }
 
@@ -140,14 +140,14 @@ public class JSONObject implements JSONSerialisable{
      * Returns an object associated by a name that inherits {@link Number}.
      * @param name name of the object.
      * @throws AttributeNotFoundException if no value associated with the given name is found.
-     * @throws AttributeTypeException if the object associated with the name is non-null and does not inherit the
+     * @throws IllegalTypeException if the object associated with the name is non-null and does not inherit the
      *                                right type.
      */
     public @Nullable Number getNumber(@NotNull String name){
         Object o = getItem(name);
         if(o == null) return null;
         if(!(o instanceof Number n))
-            throw new AttributeTypeException("Attribute identified by \"" + name + "\" is not of type Number.");
+            throw new IllegalTypeException("Attribute identified by \"" + name + "\" is not of type Number.");
         return n;
     }
 
@@ -155,13 +155,13 @@ public class JSONObject implements JSONSerialisable{
      * Returns an object associated by a name that has the form of an array, (can be safely cast to an object array).
      * @param name name of the object.
      * @throws AttributeNotFoundException if no value associated with the given name is found.
-     * @throws AttributeTypeException if the object associated with the name is non-null and is not an array.
+     * @throws IllegalTypeException if the object associated with the name is non-null and is not an array.
      */
     public @Nullable Object[] getArray(@NotNull String name){
         Object o = getItem(name);
         if(o == null) return null;
         if(!(o.getClass().isArray()))
-            throw new AttributeTypeException("Attribute identified by \"" + name + "\" is not an Array.");
+            throw new IllegalTypeException("Attribute identified by \"" + name + "\" is not an Array.");
         return (Object[]) o;
     }
 

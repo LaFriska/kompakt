@@ -1,7 +1,9 @@
 package com.friska;
 
+import com.friska.exceptions.IllegalTypeException;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,7 +11,7 @@ import java.util.List;
 /**
  * This class provides all tools in order to deserialise any arbitrary JSON-string to an instance of {@link JSONObject}.
  */
-public class JSONDeserialiser {
+public class JSONParser {
 
     /**
      * The key set represents the set of every character that may follow an escape lateral in a JSON string.
@@ -38,7 +40,7 @@ public class JSONDeserialiser {
 
     private final String originalString;
 
-    protected JSONDeserialiser(String jsonString){
+    protected JSONParser(String jsonString){
         this.originalString = jsonString;
     }
 
@@ -48,7 +50,7 @@ public class JSONDeserialiser {
     }
 
     public static JSONObject deserialise(String jsonString){
-        return new JSONDeserialiser(jsonString).deserialise();
+        return new JSONParser(jsonString).deserialise();
     }
 
 
@@ -66,11 +68,57 @@ public class JSONDeserialiser {
         return str;
     }
 
-    public static Number parseNumber(@NotNull String value){
-        return null; //TODO
+    /**
+     * In JSON, a number is defined as an integer followed by a fraction and then an exponent. See the definition
+     * of these terms in methods below, or refer to <a href="https://www.json.org/json-en.html">the JSON documentations.</a>.
+     * <p>
+     * This method takes a string representation of a JSON number, and an instance of {@link NumberType}, and parses it
+     * into a Java number.
+     * @param value string representation of a JSON number.
+     * @param type type of the number that should be return.
+     * @return an instance of a particular implementation of {@link Number} representing value.
+     * @throws IllegalArgumentException if value is not a JSON number.
+     * @throws IllegalTypeException if the number cannot be converted to the specified type.
+     */
+    public static Number parseNumber(@NotNull String value, @NotNull NumberType type){
+
+        //Hurdles to check if value is a valid number
+        String err = "Input string does not represent a JSON number.";
+        String[] dotSplit = value.split("\\.");
+        if(!isInteger(dotSplit[0])) throw new IllegalArgumentException(err);
+        if(dotSplit.length > 2) throw new IllegalArgumentException(err);
+        if(dotSplit.length == 2){
+            String[] eSplit = value.split("e|E");
+            if(!isFraction('.' + eSplit[0]))
+                throw new IllegalArgumentException(err);
+            if(eSplit.length > 2) throw new IllegalArgumentException(err);
+            if(eSplit.length == 2){
+                if(!isExponent(eSplit[1]))
+                    throw new IllegalArgumentException(err);
+            }
+        }
+
+        //Conversion of number
+        try{
+            Number res = switch(type){
+                case INT -> Integer.parseInt(value);
+                case FLOAT -> Float.parseFloat(value);
+                case DOUBLE -> Double.parseDouble(value);
+                case BIGDECIMAL -> new BigDecimal(value);
+            };
+            return res;
+        }catch(NumberFormatException e){
+            throw new IllegalTypeException("Number represented by " + value
+                    + " cannot be converted to an instance of " + type + ".");
+        }
     }
 
-    private static boolean isJSONInteger(@NotNull String value){
+    /**
+     * In JSON, an integer is defined as a single digit, or a single non-zero digit followed by a digit string, all of
+     * which may or may not contain a negation '-' at the start.
+     * @return whether an input string is an integer.
+     */
+    public static boolean isInteger(@NotNull String value){
 
         //Non-empty check
         if(value.isEmpty())
@@ -78,7 +126,7 @@ public class JSONDeserialiser {
 
         //Recursively ignore a minus sign.
         if(value.charAt(0) == '-')
-            return isJSONInteger(value.substring(1));
+            return isInteger(value.substring(1));
 
         //If single character, return if it is a digit.
         if(value.length() == 1)
@@ -87,35 +135,54 @@ public class JSONDeserialiser {
         //Otherwise 0 cannot be the leading character.
         if(value.charAt(0) == '0') return false;
 
-        return isJSONDigits(value);
+        return isDigits(value);
     }
 
-    private static boolean isJSONFraction(@NotNull String value){
+    /**
+     * In JSON, a "fraction" is defined as either an empty string, or '.' followed by a digits string.
+     * @return whether an input string is a fraction.
+     */
+    public static boolean isFraction(@NotNull String value){
         if(value.isEmpty()) return true;
         if(value.charAt(0) != '.') return false;
-        return isJSONDigits(value.substring(1));
+        return isDigits(value.substring(1));
     }
 
-    private static boolean isJSONExponent(@NotNull String value){
+    /**
+     * In JSON, an exponent is defined as either an empty string, or 'E' (or 'e') followed by a sign and a digits string.
+     * For more information, please refer to <a href="https://www.json.org/json-en.html">the JSON documentations.</a>
+     * @return whether an input string is an exponent.
+     */
+    public static boolean isExponent(@NotNull String value){
         if(value.isEmpty()) return true;
         if(value.length() < 2) return false;
         if(value.charAt(0) != 'e' && value.charAt(0) != 'E') return false;
         if(isSign(value.charAt(1))){
             if(value.length() < 3) return false;
-            return isJSONDigits(value.substring(2));
+            return isDigits(value.substring(2));
         }else{
-            return isJSONDigits(value.substring(1));
+            return isDigits(value.substring(1));
         }
     }
 
-    private static boolean isJSONDigits(@NotNull String value){
+    /**
+     * A "digits" string is simply defined as a string where each character is a decimal digit.
+     * For more information, please refer to <a href="https://www.json.org/json-en.html">the JSON documentations.</a>
+     * @return whether an input string is a digits string.
+     */
+    public static boolean isDigits(@NotNull String value){
         if(value.isEmpty()) return false;
         for(int i = 0; i < value.length(); i++)
             if(!DIGITS.contains(value.charAt(i))) return false;
         return true;
     }
 
-    private static boolean isSign(char c){
+    /**
+     * A sign character in JSON is defined as either '+' or '-'.
+     * For more information, please refer to <a href="https://www.json.org/json-en.html">the JSON documentations.</a>.
+     * @return whether an input char is a sign.
+     */
+    public static boolean isSign(char c){
         return c == '+' || c == '-';
     }
 

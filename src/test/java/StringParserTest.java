@@ -1,12 +1,12 @@
-import com.friska.JSONDeserialiser;
+import com.friska.JSONParser;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static com.friska.JSONDeserialiser.parseString;
+import static com.friska.JSONParser.parseString;
 
 /**
- * This class extensively tests {@link JSONDeserialiser#parseString(String)}.
+ * This class extensively tests {@link JSONParser#parseString(String)}.
  */
 public class StringParserTest {
 
