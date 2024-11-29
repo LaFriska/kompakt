@@ -16,11 +16,11 @@ on the particularities of JSON, see [the official JSON website](https://www.json
 
 **Installation using a Jar**
 
-1. Head to [this link](https://github.com/LaFriska/kompakt/releases) and download the latest release (jar file). 
+1. Head to [this link](https://github.com/LaFriska/kompakt/releases) and download the latest release (jar file).
 2. Follow one of the thousands of resources online to use the jar file in your project.
-If you are using IntelliJ in particular, go to `File -> Project Structure -> Libraries`, then click
-the plus (+) icon at the top. There you can the Kompakt
-jar file into your project.
+   If you are using IntelliJ in particular, go to `File -> Project Structure -> Libraries`, then click
+   the plus (+) icon at the top. There you can the Kompakt
+   jar file into your project.
 
 **Adding a Maven dependency**
 
@@ -29,32 +29,38 @@ Coming Soon!
 # Documentation
 
 Kompakt can do two important things:
+
 1. Serialise a Java object to JSON, and
 2. Parse and deserialise a JSON string into Java.
 
 ## Serialisation
 
 To serialise a Java object to JSON, edit the class of that object to
-implement `JSONSerialisable`, then simply call `serialise()` from the object.
+implement the `JSONSerialisable` interface, then simply call `serialise()` from the object. For example, below is a
+simple class representing a Person.
+
 ```java
 import com.friska.kompakt.JSONSerialisable;
+
 public class Person implements JSONSerialisable {
-    
+
     String name;
-    
+
     int age;
-    
+
     boolean isHappy;
-    
-    public Person(String name, int age, boolean isHappy){
+
+    public Person(String name, int age, boolean isHappy) {
         this.name = name;
         this.age = age;
         this.isHappy = isHappy;
     }
-    
+
 }
 ```
+
 Then, the following code
+
 ```java
 public class Main {
 
@@ -65,7 +71,9 @@ public class Main {
 
 }
 ```
+
 will print the corresponding JSON string into the console.
+
 ```json
 {
   "name": "John Doe",
@@ -73,6 +81,7 @@ will print the corresponding JSON string into the console.
   "isHappy": true
 }
 ```
+
 ### Ignoring fields
 
 In order to tell Kompakt to ignore certain fields, override `JSONSerialisable#ignoredFields()` to return
@@ -81,6 +90,7 @@ then we would write the class as follows
 
 ```java
 import com.friska.kompakt.JSONSerialisable;
+
 public class Person implements JSONSerialisable {
 
     String name;
@@ -89,7 +99,7 @@ public class Person implements JSONSerialisable {
 
     boolean isHappy;
 
-    public Person(String name, int age, boolean isHappy){
+    public Person(String name, int age, boolean isHappy) {
         this.name = name;
         this.age = age;
         this.isHappy = isHappy;
@@ -102,7 +112,9 @@ public class Person implements JSONSerialisable {
     }
 }
 ```
+
 The resulting JSON will be
+
 ```json
 {
   "name": "John Doe",
@@ -119,16 +131,17 @@ example.
 import com.friska.kompakt.JSONSerialisable;
 
 public class Student extends Person implements JSONSerialisable {
-    
+
     private int grades;
-    
+
     public Student(String name, int age, boolean isHappy, int grades) {
         super(name, age, isHappy);
         this.grades = grades;
     }
-    
+
 }
 ```
+
 ```java
 public class Main {
 
@@ -139,14 +152,18 @@ public class Main {
 
 }
 ```
+
 The resulting JSON is
+
 ```json
 {
   "grades": 32
 }
 ```
-In order to allow Kompakt to serialise inherited fields. we override 
+
+In order to allow Kompakt to serialise inherited fields. we override
 `JSONSerialisable#deepSerialise()` and return true, as follows.
+
 ```java
 import com.friska.kompakt.JSONSerialisable;
 
@@ -166,7 +183,9 @@ public class Student extends Person implements JSONSerialisable {
     }
 }
 ```
+
 Now, the resulting JSON is
+
 ```json
 {
   "grades": 32,
@@ -179,10 +198,10 @@ Now, the resulting JSON is
 ### Customisation
 
 Ignoring fields often does not provide enough control to the developer
-over what the resulting JSON should look like. For full customisation, 
-we override `JSONSerialisable#jsonAttributes()` to return a list of 
-custom instances of `Attribute` (which are simply key-value pairs) to 
-represent a custom list of elements in the resulting JSON. 
+over what the resulting JSON should look like. For full customisation,
+we override `JSONSerialisable#jsonAttributes()` to return a list of
+custom instances of `Attribute` (which are simply key-value pairs) to
+represent a custom list of elements in the resulting JSON.
 
 Below is an example.
 
@@ -240,15 +259,15 @@ public class Person implements JSONSerialisable {
 public class Main {
 
     public static void main(String[] args) {
-        Person bob = new Person("Bob", 
-                "Douglas", 
-                "Mary", 
-                "Sergei", 
-                "Liz", 
-                "Boris", 
-                3, 
-                10, 
-                12, 
+        Person bob = new Person("Bob",
+                "Douglas",
+                "Mary",
+                "Sergei",
+                "Liz",
+                "Boris",
+                3,
+                10,
+                12,
                 2020);
         System.out.println(bob.serialise());
     }
@@ -257,6 +276,7 @@ public class Main {
 
 Without overriding `jsonAttributes()`, all 10 fields will be serialised in a
 clumsy manner. However, with the override, the resulting JSON is
+
 ```json
 {
   "name": "Bob Douglas",
@@ -270,13 +290,16 @@ clumsy manner. However, with the override, the resulting JSON is
   "age": 3
 }
 ```
+
 ### Other features
+
 Some less important yet notable features
+
 1. `JSONSerialisable#serialiseIterablesAsArrays()`, which by default returns
-true, it serialises any children of Java's `Iterable` class into a JSON
-array. To disable this feature, as usual, override it and return false.
+   true, it serialises any children of Java's `Iterable` class into a JSON
+   array. To disable this feature, as usual, override it and return false.
 2. `JSONSerialisable#setIndentSize(int)`, which sets the size of an indentation
-in a serialised JSON string.
+   in a serialised JSON string.
 
 ## Deserialisation
 
@@ -297,7 +320,7 @@ data type, and the outcome of Kompakt's deserialisation process.
 
 Note that the developer may choose which type of number the parser should use. However,
 if a number represented in a JSON string cannot be converted to the
-specified type, an exception will occur. This is especially a problem when 
+specified type, an exception will occur. This is especially a problem when
 the integer type is chosen.
 
 In order to deserialise to an arbitrary `Object` instance, call `JSONParser#parse(String)`, which
@@ -341,7 +364,9 @@ public class Main {
     }
 }
 ```
+
 After running the code above, the following is the result.
+
 ```
 Bob Douglas
 10/12/2020
@@ -352,10 +377,11 @@ Sergei
 Liz
 Boris
 ```
-For further clarification, it is suggested to see the Javadocs for `JSONObject` in this 
+
+For further clarification, it is suggested to see the Javadocs for `JSONObject` in this
 repository. There are also methods that simplify the class-casting process, such as
 `JSONParse#parseAsString(String)`, but if the input JSON string does not represent
-the assumed type, an exception will be thrown. 
+the assumed type, an exception will be thrown.
 
 We strongly recommend reading the Java documentation for various classes and methods
 accessible from this GitHub repository, for further details and clarifications.
