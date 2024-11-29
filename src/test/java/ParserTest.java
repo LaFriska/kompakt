@@ -5,6 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Objects;
 
 import static org.junit.Assert.*;
 import static com.friska.JSONParser.*;
@@ -401,6 +403,87 @@ public class ParserTest {
                   }
                 }
                 """);
+    }
+
+    /**
+     * Tests JSON strings that represents an array.
+     */
+    @Test
+    public void testArrayValidSimple(){
+
+        String s0 = "[   \t]";
+        Object[] a0 = new Object[0];
+
+        String s1 = """
+                [
+                  "Hello World!",
+                  12345,
+                  true,
+                  false  , null
+                ]
+                """;
+        Object[] a1 = new Object[]{
+                "Hello World!",
+                12345F,
+                true,
+                false,
+                null,
+        };
+
+        String s2 = """
+                [
+                  "This",
+                  "Is",
+                  "A",
+                  "Nested",
+                  "Array!",
+                  [
+                    1,
+                    2,
+                    3,
+                    4.25,
+                    null,
+                    [ ]
+                  ]
+                ]
+                """;
+        Object[] a2 = new Object[]{
+                "This",
+                "Is",
+                "A",
+                "Nested",
+                "Array!",
+                new Object[]{
+                        1F,2F,3F,4.25F,null, new Object[0]
+                }
+        };
+
+        String s3 = """
+                [
+                  [
+                    [
+                      [
+                        [
+                          [
+                            [
+                              "Why would anyone do this?"
+                            ]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+                """;
+
+        Object[] a3 = new Object[]{new Object[]{new Object[]{new Object[]{new Object[]{new Object[]{new Object[]{"Why would anyone do this?"}}}}}}};
+
+        String[] toParse = new String[]{s0, s1, s2, s3};
+        Object[][] expected = new Object[][]{a0, a1, a2, a3};
+
+        for (int i = 0; i < toParse.length; i++) {
+            assertTrue(Arrays.deepEquals(expected[i], parseAsArray(toParse[i])));
+        }
     }
 
     private void testInvalid(@NotNull String json){
