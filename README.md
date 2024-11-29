@@ -306,3 +306,56 @@ would use `Float` as a default number type. Alternatively, using the overloaded 
 (`NumberType` is an enumerator of `FLOAT`, `INT`, `DOUBLE`, and `BIGDECIMAL`). Below
 is an example.
 
+```java
+public class Main {
+    public static void main(String[] args) {
+        String jsonString = """
+                {
+                  "name": "Bob Douglas",
+                  "family": [
+                    "Mary",
+                    "Sergei",
+                    "Liz",
+                    "Boris"
+                  ],
+                  "birthday": "10/12/2020",
+                  "age": 3
+                }
+                """;
+        //Deserialises JSON string into a JSONObject.
+        JSONObject object = (JSONObject) JSONParser.parse(jsonString);
+
+        //Prints name, birthday, age.
+        System.out.println(object.getString("name"));
+        System.out.println(object.getString("birthday"));
+        System.out.println(object.getItem("age"));
+
+        //Fetches array associated with the name "family".
+        Object[] family = object.getArray("family");
+
+        //Prints names of family members.
+        System.out.println("Here are the family:");
+        for (Object o : family) {
+            System.out.println(o);
+        }
+    }
+}
+```
+After running the code above, the following is the result.
+```
+Bob Douglas
+10/12/2020
+3.0
+Here are the family:
+Mary
+Sergei
+Liz
+Boris
+```
+For further clarification, it is suggested to see the Javadocs for `JSONObject` in this 
+repository. There are also methods that simplify the class-casting process, such as
+`JSONParse#parseAsString(String)`, but if the input JSON string does not represent
+the assumed type, an exception will be thrown. 
+
+We strongly recommend reading the Java documentation for various classes and methods
+accessible from this GitHub repository, for further details and clarifications.
