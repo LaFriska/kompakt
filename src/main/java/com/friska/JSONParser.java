@@ -103,8 +103,13 @@ public class JSONParser {
      * @throws IllegalArgumentException if the string is syntactically incorrect, or that the value of the key-value
      * pair is syntactically incorrect.
      */
-    public static @NotNull Attribute parseMember(@NotNull String value){
-        return new Attribute("", null); //TODO
+    public static @NotNull Attribute parseMember(@NotNull String value, @NotNull NumberType type){
+        String[] args = safeSplit(value, ':');
+        if(args.length > 2) throw new IllegalArgumentException("Unexpected token ':' in member.");
+        if(args.length < 2) throw new IllegalArgumentException("All members must have the form <String> : <Value>.");
+        String name = parseString(args[0]);
+        if(name == null) throw new IllegalArgumentException("Name of attribute cannot be null.");
+        return new Attribute(name, parseValue(args[1], type));
     }
 
     /**
