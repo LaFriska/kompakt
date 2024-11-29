@@ -5,10 +5,7 @@ import com.friska.exceptions.InvalidJSONStringException;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class provides all tools in order to deserialise any arbitrary JSON-string to an instance of {@link JSONObject}.
@@ -40,12 +37,21 @@ public class JSONParser {
         DIGITS.addAll(List.of(new Character[]{'1','2','3','4','5','6','7','8','9','0'}));
     }
 
+    public static Object parseJSON(@NotNull String jsonString){
+        return parseJSON(jsonString, NumberType.FLOAT);
+    }
+
+    public static Object parseJSON(@NotNull String jsonString, @NotNull NumberType type){
+        return parseValue(deleteSurroundingWhitespace(jsonString), type);
+    }
+
     /**
      * Simple recursive function used to remove delete whitespace characters surrounding a string.
      * @param str input string.
      * @return str with surrounding white spaces removed.
      */
     private static String deleteSurroundingWhitespace(String str){
+        if(str == null) return null;
         if(str.isBlank()) return "";
         if(Character.isWhitespace(str.charAt(0)))
             return deleteSurroundingWhitespace(str.substring(1));
@@ -59,7 +65,7 @@ public class JSONParser {
      * or an array. A value is either an object, array, string, number, boolean, or null. This method takes a string
      * input representing a value and deserialises it into an arbitrary {@link Object} of the aforementioned types.
      * Since this method may require parsing objects and arrays, which are defined using the definition of a value, this
-     * method is in mutual recursion with {@link JSONParser#parseObject(String)} and {@link JSONParser#parseArray(String)}.
+     * method is in mutual recursion with {@link JSONParser#parseObject(String, NumberType)} and {@link JSONParser#parseArray(String, NumberType)}.
      * For more information, please refer to <a href="https://www.json.org/json-en.html">the JSON documentations.</a>
      * @param value string representation of the value.
      * @param type number type for number values or sub-values.
@@ -73,8 +79,8 @@ public class JSONParser {
         if(value.isEmpty()) throw new IllegalArgumentException("Expected JSON value.");
         if(value.equals("null")) return null;
         if(value.startsWith("\"")) return parseString(value);
-        if(value.startsWith("{")) return parseObject(value);
-        if(value.startsWith("[")) return parseArray(value);
+        if(value.startsWith("{")) return parseObject(value, type);
+        if(value.startsWith("[")) return parseArray(value, type);
         try{
             return parseNumber(value, type);
         }catch(IllegalArgumentException ignored){}
@@ -85,12 +91,37 @@ public class JSONParser {
         }
     }
 
-    public static JSONObject parseObject(@NotNull String value){
-        return null; //TODO
+    public static JSONObject parseObject(@NotNull String value, @NotNull NumberType type){ //TODO docs
+        if(!value.startsWith("{") || !value.endsWith("}"))
+            throw new IllegalArgumentException("JSON objects must be wrapped in curly braces.");
+        String inside = value.substring(1, value.length() - 1);
+
+        //Blank object corresponding to "{  }".
+        if(inside.isBlank()) return new JSONObject();
+
+        String[] members = safeSplit(inside, ',');
+        Attribute[] attributes = (Attribute[]) Arrays.stream(members).map(member -> parseMember(member, type)).toArray();
+        var res = new JSONObject();
+        for (Attribute attribute : attributes) {
+            res.addAttribute(attribute.name(), attribute.val());
+        }
+        return res;
     }
 
-    public static Object[] parseArray(@NotNull String value){
-        return null; //TODO
+    public static Object[] parseArray(@NotNull String value, @NotNull NumberType type){ //TODO docs
+        if(!value.startsWith("[") || !value.endsWith("]"))
+            throw new IllegalArgumentException("JSON arrays must be wrapped in square brackets.");
+        String inside = value.substring(1, value.length() - 1);
+
+        //Blank array corresponding to "[  ]".
+        if(inside.isBlank()) return new Object[0];
+
+        String[] elements = safeSplit(inside, ',');
+        Object[] values = new Object[elements.length];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = parseValue(deleteSurroundingWhitespace(elements[i]), type);
+        }
+        return values;
     }
 
     /**
@@ -107,9 +138,9 @@ public class JSONParser {
         String[] args = safeSplit(value, ':');
         if(args.length > 2) throw new IllegalArgumentException("Unexpected token ':' in member.");
         if(args.length < 2) throw new IllegalArgumentException("All members must have the form <String> : <Value>.");
-        String name = parseString(args[0]);
+        String name = deleteSurroundingWhitespace(parseString(args[0]));
         if(name == null) throw new IllegalArgumentException("Name of attribute cannot be null.");
-        return new Attribute(name, parseValue(args[1], type));
+        return new Attribute(name, parseValue(deleteSurroundingWhitespace(args[1]), type));
     }
 
     /**
