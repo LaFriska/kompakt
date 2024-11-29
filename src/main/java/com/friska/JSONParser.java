@@ -1,7 +1,6 @@
 package com.friska;
 
 import com.friska.exceptions.IllegalTypeException;
-import com.friska.exceptions.InvalidJSONStringException;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
@@ -37,11 +36,73 @@ public class JSONParser {
         DIGITS.addAll(List.of(new Character[]{'1','2','3','4','5','6','7','8','9','0'}));
     }
 
-    public static Object parseJSON(@NotNull String jsonString){
-        return parseJSON(jsonString, NumberType.FLOAT);
+
+    public static JSONObject parseAsObject(@NotNull String jsonString){
+        return parseAsObject(jsonString, NumberType.FLOAT);
     }
 
-    public static Object parseJSON(@NotNull String jsonString, @NotNull NumberType type){
+    public static String parseAsString(@NotNull String jsonString){
+        return parseAsString(jsonString, NumberType.FLOAT);
+    }
+
+    public static Number parseAsNumber(@NotNull String jsonString){
+        return parseAsNumber(jsonString, NumberType.FLOAT);
+    }
+
+    public static Object[] parseAsArray(@NotNull String jsonString){
+        return parseAsArray(jsonString, NumberType.FLOAT);
+    }
+
+    public static Boolean parseAsBool(@NotNull String jsonString){
+        return parseAsBool(jsonString, NumberType.FLOAT);
+    }
+
+
+    public static JSONObject parseAsObject(@NotNull String jsonString, @NotNull NumberType type){
+        try {
+            return (JSONObject) parse(jsonString, type);
+        }catch (ClassCastException e){
+            throw new IllegalTypeException("Value represented by an input JSON-string is not a JSON object type.");
+        }
+    }
+
+    public static String parseAsString(@NotNull String jsonString, @NotNull NumberType type){
+        try {
+            return (String) parse(jsonString, type);
+        }catch (ClassCastException e){
+            throw new IllegalTypeException("Value represented by an input JSON-string is not a String type.");
+        }
+    }
+
+    public static Number parseAsNumber(@NotNull String jsonString, @NotNull NumberType type){
+        try {
+            return (Number) parse(jsonString, type);
+        }catch (ClassCastException e){
+            throw new IllegalTypeException("Value represented by an input JSON-string is not a Number type.");
+        }
+    }
+
+    public static Object[] parseAsArray(@NotNull String jsonString, @NotNull NumberType type){
+        try {
+            return (Object[]) parse(jsonString, type);
+        }catch (ClassCastException e){
+            throw new IllegalTypeException("Value represented by an input JSON-string is not an array.");
+        }
+    }
+
+    public static Boolean parseAsBool(@NotNull String jsonString, @NotNull NumberType type){
+        try {
+            return (Boolean) parse(jsonString, type);
+        }catch (ClassCastException e){
+            throw new IllegalTypeException("Value represented by an input JSON-string is not a Boolean type.");
+        }
+    }
+
+    public static Object parse(@NotNull String jsonString){
+        return parse(jsonString, NumberType.FLOAT);
+    }
+
+    public static Object parse(@NotNull String jsonString, @NotNull NumberType type){
         return parseValue(deleteSurroundingWhitespace(jsonString), type);
     }
 
@@ -100,7 +161,10 @@ public class JSONParser {
         if(inside.isBlank()) return new JSONObject();
 
         String[] members = safeSplit(inside, ',');
-        Attribute[] attributes = (Attribute[]) Arrays.stream(members).map(member -> parseMember(member, type)).toArray();
+        Attribute[] attributes = new Attribute[members.length];
+        for (int i = 0; i < attributes.length; i++) {
+            attributes[i] = parseMember(members[i], type);
+        }
         var res = new JSONObject();
         for (Attribute attribute : attributes) {
             res.addAttribute(attribute.name(), attribute.val());
@@ -138,7 +202,7 @@ public class JSONParser {
         String[] args = safeSplit(value, ':');
         if(args.length > 2) throw new IllegalArgumentException("Unexpected token ':' in member.");
         if(args.length < 2) throw new IllegalArgumentException("All members must have the form <String> : <Value>.");
-        String name = deleteSurroundingWhitespace(parseString(args[0]));
+        String name = parseString(deleteSurroundingWhitespace(args[0]));
         if(name == null) throw new IllegalArgumentException("Name of attribute cannot be null.");
         return new Attribute(name, parseValue(deleteSurroundingWhitespace(args[1]), type));
     }

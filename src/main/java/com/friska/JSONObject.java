@@ -45,6 +45,11 @@ public class JSONObject implements JSONSerialisable{
         attributeMap.put(name, val);
     }
 
+    public void addAttributes(Attribute... attributes){
+        for (Attribute attribute : attributes)
+            addAttribute(attribute.name(), attribute.val());
+    }
+
     /**
      * Removes an attribute identified by its name.
      * @param name name of the attribute.
