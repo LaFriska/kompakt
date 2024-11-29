@@ -295,8 +295,8 @@ clumsy manner. However, with the override, the resulting JSON is
 
 Some less important yet notable features
 
-1. `JSONSerialisable#serialiseIterablesAsArrays()`, which by default returns
-   true, it serialises any children of Java's `Iterable` class into a JSON
+1. `JSONSerialisable#serialiseIterablesAsArrays()`, which by default is set to
+   true, it serialises any fields inheriting Java's `Iterable` class into a JSON
    array. To disable this feature, as usual, override it and return false.
 2. `JSONSerialisable#setIndentSize(int)`, which sets the size of an indentation
    in a serialised JSON string.
