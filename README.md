@@ -298,7 +298,7 @@ Some less important yet notable features
 1. `JSONSerialisable#serialiseIterablesAsArrays()`, which by default is set to
    true, it serialises any fields inheriting Java's `Iterable` class into a JSON
    array. To disable this feature, as usual, override it and return false.
-2. `JSONSerialisable#setIndentSize(int)`, which sets the size of an indentation
+2. `JSONSerialisable#setIndentSize(int)`, which globally sets the size of an indentation
    in a serialised JSON string.
 
 ## Deserialisation
