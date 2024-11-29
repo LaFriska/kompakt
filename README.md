@@ -277,3 +277,32 @@ true, it serialises any children of Java's `Iterable` class into a JSON
 array. To disable this feature, as usual, override it and return false.
 2. `JSONSerialisable#setIndentSize(int)`, which sets the size of an indentation
 in a serialised JSON string.
+
+## Deserialisation
+
+Kompakt is able to parse and deserialise a well-formatted JSON string.
+As specified in the official JSON documentations, a JSON string may represent
+**6** different types of
+data, two of which are recursively defined. Below is a table showing each
+data type, and the outcome of Kompakt's deserialisation process.
+
+| Type    | Outcome                                                       |
+|---------|---------------------------------------------------------------|
+| null    | `null`                                                        |
+| String  | `String` instance                                             |
+| Boolean | `Boolean` instance                                            |
+| Number  | Either `Float`, `Double`, `Integer`, or `BigDecimal` instance |
+| Object  | `JSONObject` instance                                         |
+| Array   | `Object[]` instance                                           |
+
+Note that the developer may choose which type of number the parser should use. However,
+if a number represented in a JSON string cannot be converted to the
+specified type, an exception will occur. This is especially a problem when 
+the integer type is chosen.
+
+In order to deserialise to an arbitrary `Object` instance, call `JSONParser#parse(String)`, which
+would use `Float` as a default number type. Alternatively, using the overloaded method
+`JSONParser#parse(String, NumberType)` will allow a specific choice of number type to be used.
+(`NumberType` is an enumerator of `FLOAT`, `INT`, `DOUBLE`, and `BIGDECIMAL`). Below
+is an example.
+
