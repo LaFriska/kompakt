@@ -14,7 +14,7 @@ on the particularities of JSON, see [the official JSON website](https://www.json
 
 # Installation
 
-**Using Library as Jar**
+**Installation using a Jar**
 
 1. Head to [this link](https://github.com/LaFriska/kompakt/releases) and download the latest release (jar file). 
 2. Follow one of the thousands of resources online to use the jar file in your project.
@@ -22,7 +22,7 @@ If you are using IntelliJ in particular, go to `File -> Project Structure -> Lib
 the plus (+) icon at the top. There you can the Kompakt
 jar file into your project.
 
-**Using Library as Maven Dependency**
+**Adding a Maven dependency**
 
 Coming Soon!
 
