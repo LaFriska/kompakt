@@ -1,4 +1,4 @@
-package com.friska;
+package com.friska.kompakt;
 
 /**
  * Represents a number type for {@link JSONParser} to know which type of Java number the JSON number strings should be

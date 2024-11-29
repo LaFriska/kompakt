@@ -1,5 +1,5 @@
-import com.friska.Attribute;
-import com.friska.JSONSerialisable;
+import com.friska.kompakt.Attribute;
+import com.friska.kompakt.JSONSerialisable;
 import org.junit.Test;
 
 import java.util.ArrayList;

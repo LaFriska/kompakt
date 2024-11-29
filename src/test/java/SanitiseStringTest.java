@@ -1,8 +1,8 @@
-import com.friska.JSONUtils;
+import com.friska.kompakt.JSONUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static com.friska.JSONUtils.sanitiseString;
+import static com.friska.kompakt.JSONUtils.sanitiseString;
 
 /**
  * This class tests the method {@link JSONUtils#sanitiseString(String)}.

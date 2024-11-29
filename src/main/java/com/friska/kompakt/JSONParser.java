@@ -1,6 +1,6 @@
-package com.friska;
+package com.friska.kompakt;
 
-import com.friska.exceptions.IllegalTypeException;
+import com.friska.kompakt.exceptions.IllegalTypeException;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;

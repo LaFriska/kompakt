@@ -1,12 +1,12 @@
-import com.friska.JSONParser;
-import com.friska.NumberType;
-import com.friska.exceptions.IllegalTypeException;
+import com.friska.kompakt.JSONParser;
+import com.friska.kompakt.NumberType;
+import com.friska.kompakt.exceptions.IllegalTypeException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static com.friska.JSONParser.*;
-import static com.friska.NumberType.*;
+import static com.friska.kompakt.JSONParser.*;
+import static com.friska.kompakt.NumberType.*;
 
 /**
  * This class extensively tests {@link JSONParser#parseNumber(String, NumberType)} and its related

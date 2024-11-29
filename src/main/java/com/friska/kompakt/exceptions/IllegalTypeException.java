@@ -1,4 +1,4 @@
-package com.friska.exceptions;
+package com.friska.kompakt.exceptions;
 
 public class IllegalTypeException extends RuntimeException{ //TODO javadoc
 

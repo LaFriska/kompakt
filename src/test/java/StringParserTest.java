@@ -1,11 +1,11 @@
-import com.friska.JSONParser;
+import com.friska.kompakt.JSONParser;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
-import static com.friska.JSONParser.parseString;
+import static com.friska.kompakt.JSONParser.parseString;
 
 /**
  * This class extensively tests {@link JSONParser#parseString(String)}.

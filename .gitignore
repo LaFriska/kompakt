@@ -38,4 +38,4 @@ build/
 .DS_Store
 
 ### Testing ###
-/src/main/java/com/friska/temp/
+/src/main/java/com/friska/kompakt/temp/

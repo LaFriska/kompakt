@@ -1,6 +1,6 @@
-import com.friska.Attribute;
-import com.friska.JSONObject;
-import com.friska.JSONParser;
+import com.friska.kompakt.Attribute;
+import com.friska.kompakt.JSONObject;
+import com.friska.kompakt.JSONParser;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
-import static com.friska.JSONParser.*;
-import static com.friska.NumberType.*;
+import static com.friska.kompakt.JSONParser.*;
+import static com.friska.kompakt.NumberType.*;
 
 /**
  * This class tests the ultimate deserialisation process, i.e. {@link JSONParser#parse(String)}

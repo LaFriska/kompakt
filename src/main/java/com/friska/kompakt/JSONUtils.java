@@ -1,4 +1,4 @@
-package com.friska;
+package com.friska.kompakt;
 
 /**
  * This class holds a variety of settings and configurations for JSON serialisation, there are also utiliy methods

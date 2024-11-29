@@ -1,6 +1,6 @@
-import com.friska.exceptions.AttributeNotFoundException;
-import com.friska.exceptions.IllegalTypeException;
-import com.friska.JSONObject;
+import com.friska.kompakt.exceptions.AttributeNotFoundException;
+import com.friska.kompakt.exceptions.IllegalTypeException;
+import com.friska.kompakt.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 

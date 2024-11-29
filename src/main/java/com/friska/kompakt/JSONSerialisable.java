@@ -1,4 +1,4 @@
-package com.friska;
+package com.friska.kompakt;
 
 import java.lang.reflect.AccessFlag;
 import java.lang.reflect.Field;
@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-
-import static com.friska.JSONUtils.*;
 
 /**
  * Classes implementing this interface allows Kompakt to search through field variables and serialise them into a
@@ -42,7 +40,7 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
      * @param newSize the number of spaces for each indentation.
      */
     static void setIndentSize(int newSize){
-        INDENT_SIZE = newSize;
+        JSONUtils.INDENT_SIZE = newSize;
     }
 
     /**
@@ -154,7 +152,7 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
             String name = attribute.name();
             Object val = attribute.val();
             if(!omitted.contains(name)){
-                indent(sb, currSize + INDENT_SIZE, s -> s.append(wrap(name)).append(": "));
+                indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append(wrap(name)).append(": "));
                 serialiseItem(currSize, val, sb, false);
                 sb.append(",").append("\n");
             }
@@ -223,28 +221,28 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
     private static void serialiseItem(int currSize, Object item, StringBuilder sb, boolean indentAlways) {
         //Recursive call
         if(item instanceof JSONSerialisable s)
-            sb.append(s.serialise(currSize + INDENT_SIZE, s.ignoredFields()));
+            sb.append(s.serialise(currSize + JSONUtils.INDENT_SIZE, s.ignoredFields()));
 
         //Base cases
         else if(item == null)
             if(indentAlways)
-                indent(sb, currSize + INDENT_SIZE, s -> s.append("null"));
+                indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("null"));
             else
                 sb.append("null");
         else if(item instanceof Number || item instanceof Boolean)
             if(indentAlways)
-                indent(sb, currSize + INDENT_SIZE, s -> s.append(item));
+                indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append(item));
             else
                 sb.append(item);
         else if(item.getClass().isArray()){
             sb.append("[").append("\n");
             Object[] array = (Object[]) item;
             for (int i = 0; i < array.length; i++) {
-                serialiseItem(currSize + INDENT_SIZE, array[i], sb, true);
+                serialiseItem(currSize + JSONUtils.INDENT_SIZE, array[i], sb, true);
                 if(i != array.length - 1) sb.append(",");
                 sb.append("\n");
             }
-            indent(sb, currSize + INDENT_SIZE, s -> s.append("]"));
+            indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("]"));
         } else if (item instanceof Iterable<?> iterable){
             sb.append("[").append("\n");
             boolean flag = false;
@@ -253,14 +251,14 @@ public interface JSONSerialisable { //TODO make any iterable be serialised as a 
                     sb.append(",");
                     sb.append("\n");
                 }
-                serialiseItem(currSize + INDENT_SIZE, o, sb, true);
+                serialiseItem(currSize + JSONUtils.INDENT_SIZE, o, sb, true);
                 flag = true;
             }
-            indent(sb, currSize + INDENT_SIZE, s -> s.append("]"));
+            indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("]"));
         }
         else
             if(indentAlways)
-                indent(sb, currSize + INDENT_SIZE,
+                indent(sb, currSize + JSONUtils.INDENT_SIZE,
                         s -> s.append(wrap(JSONUtils.sanitiseString(item.toString()))));
             else
                 sb.append(wrap(JSONUtils.sanitiseString(item.toString())));
