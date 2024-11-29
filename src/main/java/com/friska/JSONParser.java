@@ -109,7 +109,9 @@ public class JSONParser {
 
     /**
      * Splits the string into a string array, cutting it whenever a char is encountered. This method is also string-safe,
-     * that is, if the char is wrapped inside JSON-strings, then it should be ignored. This works in similar fashion to
+     * object-safe and array-safe
+     * that is, if the char is wrapped inside JSON-strings, or sub-objects or arrays, then it should be ignored.
+     * Aside from this additional criteria, this works in similar fashion to
      * {@link String#split(String)}.
      * @param value string to be split.
      * @param split the character that splits the string.
@@ -119,19 +121,41 @@ public class JSONParser {
 
         boolean insideString = false;
         ArrayList<String> list = new ArrayList<>();
+
         int current = 0;
+        int objDepth = 0;
+        int arrayDepth = 0;
 
         for(int i = 0; i < value.length(); i++){
             char c = value.charAt(i);
-            if(c == '\"') insideString = !insideString;
-            if(c == '\\' && insideString) i++;
-            if(!insideString && c == split){
+
+            //Handles string laterals and escape laterals
+            switch (c){
+                case '\"' -> insideString = !insideString;
+                case '\\' -> {if(insideString) i++;}
+            }
+
+            //Changes depth level of data structures being read.
+            if(!insideString){
+                switch (c){
+                    case '}' -> objDepth = safeDec(objDepth);
+                    case ']' -> arrayDepth = safeDec(arrayDepth);
+                    case '{' -> objDepth++;
+                    case '[' -> arrayDepth++;
+                }
+            }
+
+            if(!insideString && c == split && objDepth == 0 && arrayDepth == 0){
                 list.add(value.substring(current, i));
                 current = i+1;
             }
         }
         list.add(value.substring(current));
         return list.toArray(new String[0]);
+    }
+
+    private static int safeDec(int val){
+        return val <= 0 ? 0 : val-1;
     }
 
 

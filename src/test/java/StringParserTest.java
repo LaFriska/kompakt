@@ -184,39 +184,67 @@ public class StringParserTest {
      */
     @Test
     public void stringSplitTest(){
-        char c = ',';
-        testSplit("Hello World!", c, "Hello World!");
-        testSplit("Hello,World!", c, "Hello", "World!");
-        testSplit("a,b,c,d,e,f,g", c, "a", "b", "c", "d", "e", "f", "g");
-        testSplit("a,b,c,d,e,f,g,", c, "a", "b", "c", "d", "e", "f", "g", "");
-        testSplit(",,,", c, "", "", "", "");
-        testSplit("", c, "");
-        testSplit("\"Hello,World!", c, "\"Hello,World!");
-        testSplit("\"Hello\",World!", c, "\"Hello\"", "World!");
-        testSplit("\"Hello \\\"World\\\"\"", c, "\"Hello \\\"World\\\"\"");
-        testSplit("\"Hello\",\"\\\"World\\\"\"", c, "\"Hello\"", "\"\\\"World\\\"\"");
-        testSplit("\"A \\\"quoted\\\" word, here\"", c, "\"A \\\"quoted\\\" word, here\"");
-        testSplit("\"Hello\",World,\"!\"", c, "\"Hello\"", "World", "\"!\"");
-        testSplit("\"Hello,World\",Test", c, "\"Hello,World\"", "Test");
-        testSplit("Test,\"Hello,World\"", c, "Test", "\"Hello,World\"");
-        testSplit("\"A \\\"complex, literal\\\"\",Another,\"Entry,here\"", c,
+        testSplit("Hello World!", "Hello World!");
+        testSplit("Hello,World!", "Hello", "World!");
+        testSplit("a,b,c,d,e,f,g", "a", "b", "c", "d", "e", "f", "g");
+        testSplit("a,b,c,d,e,f,g,", "a", "b", "c", "d", "e", "f", "g", "");
+        testSplit(",,,", "", "", "", "");
+        testSplit("", "");
+        testSplit("\"Hello,World!", "\"Hello,World!");
+        testSplit("\"Hello\",World!", "\"Hello\"", "World!");
+        testSplit("\"Hello \\\"World\\\"\"", "\"Hello \\\"World\\\"\"");
+        testSplit("\"Hello\",\"\\\"World\\\"\"", "\"Hello\"", "\"\\\"World\\\"\"");
+        testSplit("\"A \\\"quoted\\\" word, here\"", "\"A \\\"quoted\\\" word, here\"");
+        testSplit("\"Hello\",World,\"!\"", "\"Hello\"", "World", "\"!\"");
+        testSplit("\"Hello,World\",Test", "\"Hello,World\"", "Test");
+        testSplit("Test,\"Hello,World\"", "Test", "\"Hello,World\"");
+        testSplit("\"A \\\"complex, literal\\\"\",Another,\"Entry,here\"",
                 "\"A \\\"complex, literal\\\"\"", "Another", "\"Entry,here\"");
-        testSplit("\"Escaped\\\\,Comma\",\"Normal\",Text", c,
+        testSplit("\"Escaped\\\\,Comma\",\"Normal\",Text",
                 "\"Escaped\\\\,Comma\"", "\"Normal\"", "Text");
-        testSplit("\"Ends with escape\\\\\",Next", c, "\"Ends with escape\\\\\"", "Next");
-        testSplit(",Leading", c, "", "Leading");
-        testSplit("Trailing,", c, "Trailing", "");
-        testSplit(",Both,", c, "", "Both", "");
-        testSplit("\"Hello\\\\World\",\"Test\\\\\"", c, "\"Hello\\\\World\"", "\"Test\\\\\"");
-        testSplit("\"Escape\\\\,Comma\",\"Escaped\\\\\\\"Quote\\\"\"", c,
+        testSplit("\"Ends with escape\\\\\",Next", "\"Ends with escape\\\\\"", "Next");
+        testSplit(",Leading", "", "Leading");
+        testSplit("Trailing,", "Trailing", "");
+        testSplit(",Both,", "", "Both", "");
+        testSplit("\"Hello\\\\World\",\"Test\\\\\"", "\"Hello\\\\World\"", "\"Test\\\\\"");
+        testSplit("\"Escape\\\\,Comma\",\"Escaped\\\\\\\"Quote\\\"\"",
                 "\"Escape\\\\,Comma\"", "\"Escaped\\\\\\\"Quote\\\"\"");
         testSplit("\"The Q\\\"ui,c,k, B,ro\\\"w,n \\\" F,ox \\\" Jum\\\"ped o\\\"v,er\\\\\"The quick,BrownFox",
-                c, "\"The Q\\\"ui,c,k, B,ro\\\"w,n \\\" F,ox \\\" Jum\\\"ped o\\\"v,er\\\\\"The quick",
+                "\"The Q\\\"ui,c,k, B,ro\\\"w,n \\\" F,ox \\\" Jum\\\"ped o\\\"v,er\\\\\"The quick",
                 "BrownFox");
     }
 
-    private void testSplit(String toSplit, char c, String... expected){
-        String[] actual = JSONParser.safeSplit(toSplit, c);
+    /**
+     * Test of {@link JSONParser#safeSplit(String, char)} with nested data structures (objects and arrays).
+     */
+    @Test
+    public void stringSplitTestWithDS(){
+        testSplit("[Hello,World]", "[Hello,World]");
+        testSplit("[Hello{,}World]", "[Hello{,}World]");
+        testSplit("[Hello,World],{{},{{}{[][,][]{},[],,}},[{[]}]},\"Fox,\"",
+                "[Hello,World]", "{{},{{}{[][,][]{},[],,}},[{[]}]}", "\"Fox,\"");
+        testSplit("{\"f1\":\"Hello,World\",\",,,\":\",,,\",\"test\":[1,2,3]},[{\"f,\":\"Hello,World\",\"array\":" +
+                        "[null,true,null]}],false",
+                "{\"f1\":\"Hello,World\",\",,,\":\",,,\",\"test\":[1,2,3]}",
+                "[{\"f,\":\"Hello,World\",\"array\":[null,true,null]}]",
+                "false");
+        testSplit("{\"f1\":\"Hello,World\",\"f2\":\",,,A,,,\\\",,,A,\",\"f3\":true,\"f4\":false,\"f5\":{" +
+                        "\"array\":[\"The,Quick\\\\\\\"BrJumpedown,\\\"\\\"\\\"Fox\",23,23,null,[{},{},{},{\"array\"" +
+                        ":[{},{},[[[]]]]}]],\"number\":232}},[{\"f1\":\"tes\\\"t,t\\\"e\\\\\\\"st,t\\\"" +
+                        "e\\\\\\\\\\\\\\\\\\\"st,t\\\\est,te\\fs\\bt\\\\\",\"f2\":[{},{\"f3\":null,\"f,4\":23}]},\"tes" +
+                        "t,test,test\",\",,,,,,,\",null,[2,3]],null,\"2.3,3\"",
+                "{\"f1\":\"Hello,World\",\"f2\":\",,,A,,,\\\",,,A,\",\"f3\":true,\"f4\":false,\"f5\":{\"arr" +
+                        "ay\":[\"The,Quick\\\\\\\"BrJumpedown,\\\"\\\"\\\"Fox\",23,23,null,[{},{},{},{\"array\":[{},{}," +
+                        "[[[]]]]}]],\"number\":232}}",
+                "[{\"f1\":\"tes\\\"t,t\\\"e\\\\\\\"st,t\\\"e\\\\\\\\\\\\\\\\\\\"st,t\\\\est,te\\fs\\bt\\\\\",\"f2\":" +
+                        "[{},{\"f3\":null,\"f,4\":23}]},\"test,test,test\",\",,,,,,,\",null,[2,3]]",
+                "null",
+                "\"2.3,3\""
+                );
+    }
+
+    private void testSplit(String toSplit, String... expected){
+        String[] actual = JSONParser.safeSplit(toSplit, ',');
         assertTrue("\nExpected: " + Arrays.toString(expected) + "\nActual: " +
                 Arrays.toString(actual), Arrays.deepEquals(expected, actual));
     }
