@@ -38,16 +38,18 @@ public class JSONObject implements JSONSerialisable{
      * @param val an arbitrary value.
      * @throws IllegalArgumentException if added name is not unique.
      */
-    public void addAttribute(@NotNull String name, Object val){
+    public JSONObject addAttribute(@NotNull String name, Object val){
         if(attributeMap.containsKey(name))
             throw new IllegalArgumentException("Cannot add pre-existing attribute \"" + name +"\".");
         attributeList.add(new Attribute(name, val));
         attributeMap.put(name, val);
+        return this;
     }
 
-    public void addAttributes(Attribute... attributes){
+    public JSONObject addAttributes(Attribute... attributes){
         for (Attribute attribute : attributes)
             addAttribute(attribute.name(), attribute.val());
+        return this;
     }
 
     /**
@@ -224,6 +226,9 @@ public class JSONObject implements JSONSerialisable{
                     if(arr1.length != arr2.length)
                         return false;
                     for (int i = 0; i < arr1.length; i++) {
+                        if(arr1[i] == null && arr2[i] != null) return false;
+                        if(arr1[i] != null && arr2[i] == null) return false;
+                        if(arr1[i] == null && arr2[i] == null) continue;
                         if(!arr1[i].equals(arr2[i]))
                             return false;
                     }

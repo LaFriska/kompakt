@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.Objects;
 
 import static org.junit.Assert.*;
 import static com.friska.JSONParser.*;
@@ -73,7 +72,7 @@ public class ParserTest {
         assertEquals(23, parseAsNumber("23", INT));
         assertEquals(23, parseAsNumber("    \n      23\n\n", INT));
         assertEquals(Integer.MAX_VALUE, parseAsNumber("2147483647", INT));
-        assertEquals((float) 23.5, parseAsNumber("23.5"));
+        assertEquals((float) 23.5, parseAsFloat("23.5"));
         assertEquals(new BigDecimal("23.2957222e-23"), parseAsNumber("23.2957222e-23", BIGDECIMAL));
         assertEquals(new BigDecimal("23.2957222E-23"), parseAsNumber("23.2957222E-23", BIGDECIMAL));
         assertEquals(new BigDecimal("23.2957222E-23"), parseAsNumber("\n \n23.2957222E-23   \n ", BIGDECIMAL));

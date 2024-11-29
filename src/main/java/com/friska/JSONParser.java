@@ -7,9 +7,15 @@ import java.math.BigDecimal;
 import java.util.*;
 
 /**
- * This class provides all tools in order to deserialise any arbitrary JSON-string to an instance of {@link JSONObject}.
+ * This class provides methods to parse and deserialise JSON strings into arbitrary Java objects. In particular, the
+ * method {@link JSONParser#parse(String)} and {@link JSONParser#parse(String, NumberType)} provides the operation,
+ * and methods that simplify the casting process of the resulting {@link Object} instance is also defined. This class
+ * is not object-oriented in nature, that is, each method and variable is static, and this class cannot be instantiated.
+ * Inheriting this class is possible, but pointless.
+ * @see JSONParser#parse(String)
+ * @see JSONParser#parse(String, NumberType)
  */
-public class JSONParser {
+abstract public class JSONParser {
 
     /**
      * The key set represents the set of every character that may follow an escape lateral in a JSON string.
@@ -18,6 +24,9 @@ public class JSONParser {
      */
     private static final HashMap<Character, Character> ESCAPE_CHARS;
 
+    /**
+     * Every digit from 0 to 9.
+     */
     private static final HashSet<Character> DIGITS;
 
     static{
@@ -37,27 +46,132 @@ public class JSONParser {
     }
 
 
+
+
+
+    //------------------------------------------------------------------------------------------------------------------
+    //--------------------------------------------------PARSER----------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+    /**
+     * Given a JSON string, calls {@link JSONParser#parse(String)} on it and casts the result as a {@link JSONObject}
+     * instance. For more information, see documentations for {@link JSONParser#parse(String)}.
+     * @param jsonString JSON string to be parsed and deserialised.
+     * @return a {@link JSONObject} instance representing the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if the object represented by the JSON string cannot be converted to a {@link JSONObject}.
+     */
     public static JSONObject parseAsObject(@NotNull String jsonString){
         return parseAsObject(jsonString, NumberType.FLOAT);
     }
 
+    /**
+     * Given a JSON string, calls {@link JSONParser#parse(String)} on it and casts the result as a string.
+     * instance. For more information, see documentations for {@link JSONParser#parse(String)}.
+     * @param jsonString JSON string to be parsed and deserialised.
+     * @return a string representing the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if the object represented by the JSON string cannot be converted to a string.
+     */
     public static String parseAsString(@NotNull String jsonString){
-        return parseAsString(jsonString, NumberType.FLOAT);
+        try {
+            return (String) parse(jsonString, NumberType.FLOAT);
+        }catch (ClassCastException e){
+            throw new IllegalTypeException("Value represented by an input JSON-string is not a String type.");
+        }
     }
 
-    public static Number parseAsNumber(@NotNull String jsonString){
+    /**
+     * Given a JSON string, calls {@link JSONParser#parse(String)} on it and casts the result as a float
+     * instance. For more information, see documentations for {@link JSONParser#parse(String)}.
+     * @param jsonString JSON string to be parsed and deserialised.
+     * @return a float instance representing the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if the object represented by the JSON string cannot be converted to a float.
+     */
+    public static Number parseAsFloat(@NotNull String jsonString){
         return parseAsNumber(jsonString, NumberType.FLOAT);
     }
 
+    /**
+     * Given a JSON string, calls {@link JSONParser#parse(String)} on it and casts the result as an integer.
+     * For more information, see documentations for {@link JSONParser#parse(String)}.
+     * @param jsonString JSON string to be parsed and deserialised.
+     * @return an integer representing the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if the object represented by the JSON string cannot be converted to an int.
+     */
+    public static Number parseAsInteger(@NotNull String jsonString){
+        return parseAsNumber(jsonString, NumberType.INT);
+    }
+
+    /**
+     * Given a JSON string, calls {@link JSONParser#parse(String)} on it and casts the result as a double.
+     * For more information, see documentations for {@link JSONParser#parse(String)}.
+     * @param jsonString JSON string to be parsed and deserialised.
+     * @return a double representing the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if the object represented by the JSON string cannot be converted to a double.
+     */
+    public static Number parseAsDouble(@NotNull String jsonString){
+        return parseAsNumber(jsonString, NumberType.DOUBLE);
+    }
+
+    /**
+     * Given a JSON string, calls {@link JSONParser#parse(String)} on it and casts the result as a {@link BigDecimal} instance.
+     * For more information, see documentations for {@link JSONParser#parse(String)}.
+     * @param jsonString JSON string to be parsed and deserialised.
+     * @return a {@link BigDecimal} instance representing the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if the object represented by the JSON string cannot be converted to a {@link BigDecimal} instance.
+     */
+    public static Number parseAsBigDecimal(@NotNull String jsonString){
+        return parseAsNumber(jsonString, NumberType.BIGDECIMAL);
+    }
+
+    /**
+     * Given a JSON string, calls {@link JSONParser#parse(String)} on it and casts the result as an object array.
+     * For more information, see documentations for {@link JSONParser#parse(String)}.
+     * @param jsonString JSON string to be parsed and deserialised.
+     * @return an object array representing the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if the object represented by the JSON string cannot be converted to an object array.
+     */
     public static Object[] parseAsArray(@NotNull String jsonString){
         return parseAsArray(jsonString, NumberType.FLOAT);
     }
 
+    /**
+     * Given a JSON string, calls {@link JSONParser#parse(String)} on it and casts the result as a boolean value.
+     * For more information, see documentations for {@link JSONParser#parse(String)}.
+     * @param jsonString JSON string to be parsed and deserialised.
+     * @return a boolean value representing the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if the object represented by the JSON string cannot be converted to a boolean.
+     */
     public static Boolean parseAsBool(@NotNull String jsonString){
-        return parseAsBool(jsonString, NumberType.FLOAT);
+        try {
+            return (Boolean) parse(jsonString, NumberType.FLOAT);
+        }catch (ClassCastException e){
+            throw new IllegalTypeException("Value represented by an input JSON-string is not a Boolean type.");
+        }
     }
 
-
+    /**
+     * Given a JSON string, calls {@link JSONParser#parse(String)} on it and casts the result as a {@link JSONObject}
+     * instance. For more information, see documentations for {@link JSONParser#parse(String, NumberType)}.
+     * @param jsonString JSON string to be parsed and deserialised.
+     * @param type specific type of numbers in the object to be converted to.
+     * @return a {@link JSONObject} instance representing the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if the object represented by the JSON string cannot be converted to a {@link JSONObject}, or
+     * a number represented inside the JSON string cannot be converted to the specific number type.
+     */
     public static JSONObject parseAsObject(@NotNull String jsonString, @NotNull NumberType type){
         try {
             return (JSONObject) parse(jsonString, type);
@@ -66,14 +180,16 @@ public class JSONParser {
         }
     }
 
-    public static String parseAsString(@NotNull String jsonString, @NotNull NumberType type){
-        try {
-            return (String) parse(jsonString, type);
-        }catch (ClassCastException e){
-            throw new IllegalTypeException("Value represented by an input JSON-string is not a String type.");
-        }
-    }
-
+    /**
+     * Given a JSON string, calls {@link JSONParser#parse(String)} on it and casts the result as a number.
+     * For more information, see documentations for {@link JSONParser#parse(String, NumberType)}.
+     * @param jsonString JSON string to be parsed and deserialised.
+     * @param type specific type of numbers in the object to be converted to.
+     * @return a number instance representing the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if the object represented by the JSON string cannot be converted to a the type of the
+     * number specified in through the arguments.
+     */
     public static Number parseAsNumber(@NotNull String jsonString, @NotNull NumberType type){
         try {
             return (Number) parse(jsonString, type);
@@ -82,6 +198,16 @@ public class JSONParser {
         }
     }
 
+    /**
+     * Given a JSON string, calls {@link JSONParser#parse(String)} on it and casts the result as an object array.
+     * instance. For more information, see documentations for {@link JSONParser#parse(String, NumberType)}.
+     * @param jsonString JSON string to be parsed and deserialised.
+     * @param type specific type of numbers in the object to be converted to.
+     * @return an object array instance representing the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if the object represented by the JSON string cannot be converted to an object array, or
+     * a number represented inside the JSON string cannot be converted to the specific number type.
+     */
     public static Object[] parseAsArray(@NotNull String jsonString, @NotNull NumberType type){
         try {
             return (Object[]) parse(jsonString, type);
@@ -90,21 +216,97 @@ public class JSONParser {
         }
     }
 
-    public static Boolean parseAsBool(@NotNull String jsonString, @NotNull NumberType type){
-        try {
-            return (Boolean) parse(jsonString, type);
-        }catch (ClassCastException e){
-            throw new IllegalTypeException("Value represented by an input JSON-string is not a Boolean type.");
-        }
-    }
-
+    /**
+     * Given a JSON string, parses and deserialises the string into an instance of one of the following:
+     * <ul>
+     *     <li>
+     *         {@link String}
+     *     </li>
+     *     <li>
+     *         {@link Boolean}
+     *     </li>
+     *     <li>
+     *         An {@link Object} array
+     *     </li>
+     *     <li>
+     *         {@link JSONObject}
+     *     </li>
+     *     <li>
+     *         {@link Float}
+     *     </li>
+     * </ul>
+     * Note that this method will throw an exception if a number represented somewhere inside the JSON string
+     * cannot be converted to a float. To avoid this, or if in general a different implementation of {@link Number}
+     * should be used, call {@link JSONParser#parse(String, NumberType)} instead, where one of the four number types
+     * defined in {@link NumberType} may be used.
+     * This method follows strictly to the specification and the context-free grammar that generates JSON defined by
+     * the designers of the JSON.
+     * For more information, please refer to <a href="https://www.json.org/json-en.html">the JSON documentations.</a>
+     * @param jsonString A JSON string.
+     * @return a Java object representing the object specified by the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if a number cannot be converted to a float.
+     */
     public static Object parse(@NotNull String jsonString){
         return parse(jsonString, NumberType.FLOAT);
     }
 
+    /**
+     * Given a JSON string, parses and deserialises the string into an instance of one of the following:
+     * <ul>
+     *     <li>
+     *         {@link String}
+     *     </li>
+     *     <li>
+     *         {@link Boolean}
+     *     </li>
+     *     <li>
+     *         An {@link Object} array
+     *     </li>
+     *     <li>
+     *         {@link JSONObject}
+     *     </li>
+     *     <li> One of the following child classes of {@link Number} depending on the specified type.
+     *         <ul>
+     *             <li>
+     *                 {@link Float}
+     *             </li>
+     *             <li>
+     *                 {@link Double}
+     *             </li>
+     *             <li>
+     *                 {@link Integer}
+     *             </li>
+     *             <li>
+     *                 {@link BigDecimal}
+     *             </li>
+     *         </ul>
+     *     </li>
+     * </ul>
+     * This method follows strictly to the specification and the context-free grammar that generates JSON defined by
+     * the designers of the JSON.
+     * For more information, please refer to <a href="https://www.json.org/json-en.html">the JSON documentations.</a>
+     * @param jsonString A JSON string.
+     * @param type resulting type of any sub-values represented in the JSON string that represents a number.
+     * @return a Java object representing the object specified by the JSON string.
+     * @throws IllegalArgumentException if a syntax error occurs in the JSON string.
+     * @throws IllegalTypeException if a number cannot be converted to a type specified by the type value.
+     */
     public static Object parse(@NotNull String jsonString, @NotNull NumberType type){
         return parseValue(deleteSurroundingWhitespace(jsonString), type);
     }
+
+
+
+
+
+    //------------------------------------------------------------------------------------------------------------------
+    //--------------------------------------------------HELPERS---------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------
+
+
+
+
 
     /**
      * Simple recursive function used to remove delete whitespace characters surrounding a string.
