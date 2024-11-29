@@ -9,6 +9,10 @@ public enum NumberType {
     INT("Integer"),
     FLOAT("Float"),
     DOUBLE("Double"),
+
+    /**
+     * @see java.math.BigDecimal
+     */
     BIGDECIMAL("BigDecimal");
 
     public final String typeName;
