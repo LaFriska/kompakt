@@ -6,8 +6,8 @@ import com.friska.kompakt.JSONObject;
 /**
  * Thrown when an attempt to access a non-existing {@link Attribute} from a {@link JSONObject} is made.
  */
-public class AttributeNotFoundException extends RuntimeException{
-    public AttributeNotFoundException(String name){
+public class AttributeNotFoundException extends RuntimeException {
+    public AttributeNotFoundException(String name) {
         super("Unable to retrieve attribute called \"" + name + "\".");
     }
 

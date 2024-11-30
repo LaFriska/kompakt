@@ -1035,6 +1035,85 @@ public class ParserTest {
                 """);
     }
 
+    /**
+     * Addition complex test cases.
+     */
+    @Test
+    public void testComplex(){
+
+
+        String s1 = """
+                {
+                  "nullValue": null,
+                  "booleanValues": {
+                    "trueValue": true,
+                    "falseValue": false
+                  },
+                  "numbers": {
+                    "1": 42,
+                    "2": -42,
+                    "3": 3.14159,
+                    "4": -2.718,
+                    "5": 1.23e4,
+                    "6": -4.56e-7,
+                    "7": 0,
+                    "8": 1.0
+                  },
+                  "arrays": [
+                    [],
+                    [1, "two", false, null, {"nested": true}],
+                    [[[]]],
+                    [1.1, -1, 0, 1e10, -3.14],
+                    ["string with spaces", "tabs\\t", "newlines\\n"]
+                  ],
+                  "objects": {
+                    "emptyObject": {},
+                    "simpleObject": {"key": "value"},
+                    "nestedObjects": {
+                      "level1": {
+                        "level2": {
+                          "level3": {
+                            "key": "deep value"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "edgeCases": {
+                    "keyWithEmptyString": "",
+                    "keyWithNull": null,
+                    "keyWithEmptyArray": [],
+                    "keyWithEmptyObject": {},
+                    "repeatedKeys": {"key": 1, "key": 2, "key": 3},\s\s
+                    "numberAsKey": {
+                      "123": "number key"
+                    }
+                  }
+                }
+                """;
+
+        JSONObject o1 = parseAsObject(s1, BIGDECIMAL);
+
+        assertNull(o1.getItem("nullValue"));
+        assertEquals(
+                new JSONObject().addAttribute("trueValue", true).addAttribute("falseValue", false),
+                o1.getJSONObject("booleanValues")
+        );
+        assertEquals(
+                new JSONObject()
+                        .addAttribute("1", new BigDecimal("42"))
+                        .addAttribute("2", new BigDecimal("-42"))
+                        .addAttribute("3", new BigDecimal("3.14159"))
+                        .addAttribute("4", new BigDecimal("-2.718"))
+                        .addAttribute("5", new BigDecimal("1.23e4"))
+                        .addAttribute("6", new BigDecimal("-4.56e-7"))
+                        .addAttribute("7", new BigDecimal("0"))
+                        .addAttribute("8", new BigDecimal("1.0")),
+                o1.getJSONObject("numbers")
+        );
+
+    }
+
     private void testInvalid(@NotNull String json){
         assertThrows(ERROR_CLASS, () -> parse(json));
     }
