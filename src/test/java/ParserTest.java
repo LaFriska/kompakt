@@ -1050,20 +1050,14 @@ public class ParserTest {
                     "falseValue": false
                   },
                   "numbers": {
-                    "integer": 42,
-                    "negativeInteger": -42,
-                    "float": 3.14159,
-                    "negativeFloat": -2.718,
-                    "scientificNotation": 1.23e4,
-                    "negativeScientificNotation": -4.56e-7,
-                    "zero": 0,
-                    "edgeCaseFloat": 1.0
-                  },
-                  "strings": {
-                    "regular": "Hello, World!",
-                    "emptyString": "",
-                    "escapedCharacters": "Newline: \\\\n, Tab: \\\\t, Quote: \\\\\\"",
-                    "unicode": "Unicode: \\u2764\\ufe0f"
+                    "1": 42,
+                    "2": -42,
+                    "3": 3.14159,
+                    "4": -2.718,
+                    "5": 1.23e4,
+                    "6": -4.56e-7,
+                    "7": 0,
+                    "8": 1.0
                   },
                   "arrays": [
                     [],
@@ -1090,16 +1084,33 @@ public class ParserTest {
                     "keyWithNull": null,
                     "keyWithEmptyArray": [],
                     "keyWithEmptyObject": {},
-                    "repeatedKeys": {"key": 1, "key": 2},\s\s
+                    "repeatedKeys": {"key": 1, "key": 2, "key": 3},\s\s
                     "numberAsKey": {
                       "123": "number key"
                     }
                   }
                 }
-                     
                 """;
 
-        JSONObject o1 = parseAsObject(s1);
+        JSONObject o1 = parseAsObject(s1, BIGDECIMAL);
+
+        assertNull(o1.getItem("nullValue"));
+        assertEquals(
+                new JSONObject().addAttribute("trueValue", true).addAttribute("falseValue", false),
+                o1.getJSONObject("booleanValues")
+        );
+        assertEquals(
+                new JSONObject()
+                        .addAttribute("1", new BigDecimal("42"))
+                        .addAttribute("2", new BigDecimal("-42"))
+                        .addAttribute("3", new BigDecimal("3.14159"))
+                        .addAttribute("4", new BigDecimal("-2.718"))
+                        .addAttribute("5", new BigDecimal("1.23e4"))
+                        .addAttribute("6", new BigDecimal("-4.56e-7"))
+                        .addAttribute("7", new BigDecimal("0"))
+                        .addAttribute("8", new BigDecimal("1.0")),
+                o1.getJSONObject("numbers")
+        );
 
     }
 
