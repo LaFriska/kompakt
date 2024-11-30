@@ -187,9 +187,9 @@ public interface JSONSerialisable {
             indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("]"));
         } else if (indentAlways)
             indent(sb, currSize + JSONUtils.INDENT_SIZE,
-                    s -> s.append(wrap(JSONUtils.sanitiseString(item.toString()))));
+                    s -> s.append(wrap(item.toString())));
         else
-            sb.append(wrap(JSONUtils.sanitiseString(item.toString())));
+            sb.append(wrap(item.toString()));
     }
 
     private static void indent(StringBuilder sb, int indentSize, Consumer<StringBuilder> action) {
@@ -198,7 +198,7 @@ public interface JSONSerialisable {
     }
 
     private static String wrap(String str) {
-        return "\"" + str + "\"";
+        return "\"" + JSONUtils.sanitiseString(str) + "\"";
     }
 
     /**

@@ -190,6 +190,9 @@ public class StringParserTest {
         testSplit("a,b,c,d,e,f,g,", "a", "b", "c", "d", "e", "f", "g", "");
         testSplit(",,,", "", "", "", "");
         testSplit("", "");
+
+        testSplit("\"\\\"\", \"Hi\"", "\"\\\"\"", " \"Hi\"");
+        testSplit("\"\\\"\", \"\\\"\"", "\"\\\"\"", " \"\\\"\"");
         testSplit("\"Hello,World!", "\"Hello,World!");
         testSplit("\"Hello\",World!", "\"Hello\"", "World!");
         testSplit("\"Hello \\\"World\\\"\"", "\"Hello \\\"World\\\"\"");
