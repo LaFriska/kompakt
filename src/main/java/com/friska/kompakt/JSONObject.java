@@ -50,6 +50,9 @@ public class JSONObject implements JSONSerialisable {
         return this;
     }
 
+    /**
+     * This method detects and renames duplicate names.
+     */
     private String safeName(@NotNull String name){
         if(!attributeMap.containsKey(name)) return name;
         Integer i = getNameEnd(name);
