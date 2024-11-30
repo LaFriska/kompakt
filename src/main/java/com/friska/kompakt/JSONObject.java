@@ -5,10 +5,7 @@ import com.friska.kompakt.exceptions.IllegalTypeException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class represents an arbitrary object type stored in a JSON, which by definition, is a set of key-value pairs.
@@ -259,15 +256,7 @@ public class JSONObject implements JSONSerialisable {
                 if (o1.getClass().isArray() && o2.getClass().isArray()) {
                     Object[] arr1 = (Object[]) o1;
                     Object[] arr2 = (Object[]) o2;
-                    if (arr1.length != arr2.length)
-                        return false;
-                    for (int i = 0; i < arr1.length; i++) {
-                        if (arr1[i] == null && arr2[i] != null) return false;
-                        if (arr1[i] != null && arr2[i] == null) return false;
-                        if (arr1[i] == null && arr2[i] == null) continue;
-                        if (!arr1[i].equals(arr2[i]))
-                            return false;
-                    }
+                    if(!Arrays.deepEquals(arr1, arr2)) return false;
                 } else if (!o1.equals(o2))
                     return false;
             }
