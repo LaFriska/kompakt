@@ -49,10 +49,6 @@ public class JSONObjectTest {
         //Test removing a non-existent attribute
         assertThrows(AttributeNotFoundException.class, () -> o.removeAttribute("nonExistentAttribute"));
 
-        //Test adding a duplicate attribute
-        o.addAttribute("duplicateTest", 42);
-        assertThrows(IllegalArgumentException.class, () -> o.addAttribute("duplicateTest", 100));
-
         //Test null and edge cases
         o.addAttribute("nullableAttribute", null);
         assertNull(o.getItem("nullableAttribute"));
@@ -67,15 +63,14 @@ public class JSONObjectTest {
         assertThrows(IllegalTypeException.class, () -> o.getBool("age"));   // age is not a Boolean
         assertThrows(IllegalTypeException.class, () -> o.getArray("age"));  // age is not an Array
 
-        // est object validity after multiple operations
+        //Test object validity after multiple operations
         assertFalse(o.isEmpty());
         o.removeAttribute("age");
         o.removeAttribute("isActive");
         o.removeAttribute("nestedObject");
         o.removeAttribute("array");
-        o.removeAttribute("nullableAttribute");
         assertFalse(o.isEmpty());
-        o.removeAttribute("duplicateTest");
+        o.removeAttribute("nullableAttribute");
         assertTrue(o.isEmpty());
     }
 
@@ -335,6 +330,40 @@ public class JSONObjectTest {
         assertThrows(IllegalTypeException.class, () -> o.getJSONObject("age"));
         assertThrows(IllegalTypeException.class, () -> o.getJSONObject("adopted"));
         assertThrows(IllegalTypeException.class, () -> o.getJSONObject("animal"));
+    }
+
+    /**
+     * Simple test of adding duplicate attributes into the object.
+     */
+    @Test
+    public void testDuplicate(){
+
+        assertEquals(
+                new JSONObject().addAttribute("key", 0).addAttribute("key_1", 1)
+                        .addAttribute("key_2", 2).addAttribute("key_3", 3),
+                new JSONObject().addAttribute("key", 0).addAttribute("key", 1)
+                .addAttribute("key", 2).addAttribute("key", 3)
+        );
+
+        assertEquals(
+                new JSONObject().addAttribute("key", 0).addAttribute("key_1", 1)
+                        .addAttribute("key_2", 2).addAttribute("key_3", 3),
+                new JSONObject().addAttribute("key_2", 2).addAttribute("key", 0)
+                        .addAttribute("key", 1).addAttribute("key", 3)
+        );
+
+        assertEquals(
+                new JSONObject().addAttribute("_200", null)
+                        .addAttribute("_201", null)
+                        .addAttribute("_202", null)
+                        .addAttribute("_203", null)
+                        .addAttribute("_204", null),
+                new JSONObject().addAttribute("_200", null)
+                        .addAttribute("_203", null)
+                        .addAttribute("_200", null)
+                        .addAttribute("_200", null)
+                        .addAttribute("_200", null)
+        );
     }
 
     public void assertEqualsArray(Object[] expected, Object[] actual){

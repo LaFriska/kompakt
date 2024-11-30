@@ -1035,6 +1035,74 @@ public class ParserTest {
                 """);
     }
 
+    /**
+     * Addition complex test cases.
+     */
+    @Test
+    public void testComplex(){
+
+
+        String s1 = """
+                {
+                  "nullValue": null,
+                  "booleanValues": {
+                    "trueValue": true,
+                    "falseValue": false
+                  },
+                  "numbers": {
+                    "integer": 42,
+                    "negativeInteger": -42,
+                    "float": 3.14159,
+                    "negativeFloat": -2.718,
+                    "scientificNotation": 1.23e4,
+                    "negativeScientificNotation": -4.56e-7,
+                    "zero": 0,
+                    "edgeCaseFloat": 1.0
+                  },
+                  "strings": {
+                    "regular": "Hello, World!",
+                    "emptyString": "",
+                    "escapedCharacters": "Newline: \\\\n, Tab: \\\\t, Quote: \\\\\\"",
+                    "unicode": "Unicode: \\u2764\\ufe0f"
+                  },
+                  "arrays": [
+                    [],
+                    [1, "two", false, null, {"nested": true}],
+                    [[[]]],
+                    [1.1, -1, 0, 1e10, -3.14],
+                    ["string with spaces", "tabs\\t", "newlines\\n"]
+                  ],
+                  "objects": {
+                    "emptyObject": {},
+                    "simpleObject": {"key": "value"},
+                    "nestedObjects": {
+                      "level1": {
+                        "level2": {
+                          "level3": {
+                            "key": "deep value"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "edgeCases": {
+                    "keyWithEmptyString": "",
+                    "keyWithNull": null,
+                    "keyWithEmptyArray": [],
+                    "keyWithEmptyObject": {},
+                    "repeatedKeys": {"key": 1, "key": 2},\s\s
+                    "numberAsKey": {
+                      "123": "number key"
+                    }
+                  }
+                }
+                     
+                """;
+
+        JSONObject o1 = parseAsObject(s1);
+
+    }
+
     private void testInvalid(@NotNull String json){
         assertThrows(ERROR_CLASS, () -> parse(json));
     }

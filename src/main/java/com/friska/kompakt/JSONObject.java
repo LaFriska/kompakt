@@ -39,15 +39,32 @@ public class JSONObject implements JSONSerialisable {
      *
      * @param name name of attribute, which must be unique and not pre-existing in this object.
      * @param val  an arbitrary value.
-     * @throws IllegalArgumentException if added name is not unique.
      * @return this, allowing chained method calls.
      */
     public JSONObject addAttribute(@NotNull String name, Object val) {
+        name = safeName(name);
         if (attributeMap.containsKey(name))
             throw new IllegalArgumentException("Cannot add pre-existing attribute \"" + name + "\".");
         attributeList.add(new Attribute(name, val));
         attributeMap.put(name, val);
         return this;
+    }
+
+    private String safeName(@NotNull String name){
+        if(!attributeMap.containsKey(name)) return name;
+        Integer i = getNameEnd(name);
+        if(i == null) return safeName(name + "_1");
+        int len = i.toString().length() + 1;
+        return safeName(name.substring(0, name.length() - len) + "_" + (i+1));
+    }
+
+    private static Integer getNameEnd(@NotNull String name){
+        try{
+            String[] split = name.split("_");
+            return Integer.parseInt(split[split.length - 1]);
+        }catch (NumberFormatException | ArrayIndexOutOfBoundsException e){
+            return null;
+        }
     }
 
     /**
