@@ -1,6 +1,7 @@
 package com.friska.kompakt;
 
 import com.friska.kompakt.annotations.DeepSerialise;
+import com.friska.kompakt.annotations.Ignored;
 
 import java.lang.reflect.AccessFlag;
 import java.lang.reflect.Field;
@@ -19,7 +20,9 @@ import java.util.function.Consumer;
  * <ul>
  *     <li>
  *         {@link JSONSerialisable#ignoredFields()}, returns an array of field names that should be ignored from
- *         serialisation.
+ *         serialisation. Overriding this method however, fixes the name of a field in a string value and may cause
+ *         difficulties when the class is being refactored. However, annotating fields with {@link Ignored} achieves
+ *         the same result and is likely a much more preferable way to configure ignored fields.
  *     </li>
  *     <li>
  *         {@link JSONSerialisable#deepSerialise()}, returns whether fields from super classes should be serialised.
@@ -100,7 +103,7 @@ public interface JSONSerialisable {
         try {
             ArrayList<Attribute> attributes = new ArrayList<>();
             for (Field field : fields) {
-                if (!field.accessFlags().contains(AccessFlag.STATIC)) {
+                if (!field.accessFlags().contains(AccessFlag.STATIC) && !field.isAnnotationPresent(Ignored.class)) {
                     boolean canAccess = field.canAccess(obj);
                     field.setAccessible(true);
                     attributes.add(new Attribute(field.getName(), field.get(obj)));
