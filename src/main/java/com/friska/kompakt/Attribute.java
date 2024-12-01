@@ -10,8 +10,15 @@ import org.jetbrains.annotations.Nullable;
  *
  * @param name name of the attribute.
  * @param val  value being stored.
+ * @param serialiseAsString whether this attribute should be serialised as a string when processed by
+ * {@link JSONSerialisable}. In most circumstances this parameter can be ignored, and the constructor with just
+ *                          its name and value as an input will by default set it to false.
  */
-public record Attribute(@NotNull String name, @Nullable Object val) {
+public record Attribute(@NotNull String name, @Nullable Object val, boolean serialiseAsString) {
+
+    public Attribute(@NotNull String name, @Nullable Object val){
+        this(name, val, false);
+    }
 
     /**
      * Equivalence is defined purely based on the name of two attributes, since attributes are always

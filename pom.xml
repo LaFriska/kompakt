@@ -6,7 +6,7 @@
 
     <groupId>com.friska</groupId>
     <artifactId>kompakt</artifactId>
-    <version>1.0.1-alpha</version>
+    <version>v1.1.0</version>
 
     <properties>
         <maven.compiler.source>23</maven.compiler.source>
@@ -15,7 +15,6 @@
     </properties>
 
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

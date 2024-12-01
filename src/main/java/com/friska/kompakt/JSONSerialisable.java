@@ -1,7 +1,9 @@
 package com.friska.kompakt;
 
-import java.lang.reflect.AccessFlag;
-import java.lang.reflect.Field;
+import com.friska.kompakt.annotations.DeepSerialise;
+import com.friska.kompakt.annotations.Ignored;
+import com.friska.kompakt.annotations.SerialiseAsString;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -11,27 +13,28 @@ import java.util.function.Consumer;
 /**
  * Classes implementing this interface allows Kompakt to search through field variables and serialise them into a
  * JSON string. This process is done by calling {@link JSONSerialisable#serialise()}. There are configurations available
- * in the form of trivial methods with a default return value, but should be overridden if such configurations should
- * be modified. Below are such configurations. (Read their documentation for more detail.)
+ * in the form annotations, or of methods with a default return value, but should be overridden if such configurations should
+ * be modified. Below are such configurations.
  * <ul>
  *     <li>
- *         {@link JSONSerialisable#ignoredFields()}, returns an array of field names that should be ignored from
- *         serialisation.
+ *         Ignoring fields - to ignore fields from the serialisation process, annotate the given field with {@link Ignored}
  *     </li>
  *     <li>
- *         {@link JSONSerialisable#deepSerialise()}, returns whether fields from super classes should be serialised.
+ *         Deep serialise - to serialise inherited fields, annotate the class with {@link DeepSerialise}.
  *     </li>
  *     <li>
- *         {@link JSONSerialisable#serialiseIterablesAsArrays()}, returns whether fields that inherit {@link Iterable}
- *         should be serialised as JSON arrays.
+ *         Custom JSON attributes - to serialise the class into a custom set of attributes, override
+ *         {@link JSONSerialisable#jsonAttributes()}.
  *     </li>
  *     <li>
- *         {@link JSONSerialisable#jsonAttributes()}, returns a list of attributes to be serialised.
+ *         Serialising an object by its toString value - this configuration may occasionally be useful, simply annotate
+ *         a field with {@link SerialiseAsString}.
+ *     </li>
+ *     <li>
+ *         Custom indent sizes - to customise the JSON indent size, call the static setter
+ *         {@link JSONSerialisable#setIndentSize(int)}.
  *     </li>
  * </ul>
- * Another configuration that does not come in the form of a default non-static method is
- * {@link JSONSerialisable#setIndentSize(int)}, which sets the global indent size of JSON serialisation using a single
- * static setter.
  */
 public interface JSONSerialisable {
 
@@ -51,7 +54,7 @@ public interface JSONSerialisable {
      * @return a list of attributes representing these fields.
      */
     private static List<Attribute> fetchFieldsAsAttributes(Object obj) {
-        return fieldToAttributes(obj.getClass().getDeclaredFields(), obj);
+        return JSONUtils.fieldToAttributes(obj.getClass().getDeclaredFields(), obj);
     }
 
     /**
@@ -62,7 +65,6 @@ public interface JSONSerialisable {
      * @param omitted  a set of names of omitted field variables.
      * @param <T>      an arbitrary type that extends {@link JSONSerialisable}.
      * @return a string representation of the serialised JSON object.
-     * @throws IllegalAccessException
      */
     private static <T extends JSONSerialisable> String serialise(T obj, int currSize, Set<String> omitted)
             throws IllegalAccessException {
@@ -81,7 +83,7 @@ public interface JSONSerialisable {
             Object val = attribute.val();
             if (!omitted.contains(name)) {
                 indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append(wrap(name)).append(": "));
-                serialiseItem(currSize, val, sb, false);
+                serialiseItem(currSize, val, sb, false, attribute.serialiseAsString());
                 sb.append(",").append("\n");
             }
         }
@@ -90,24 +92,6 @@ public interface JSONSerialisable {
             sb.delete(sb.length() - 2, sb.length() - 1);
         indent(sb, currSize, s -> s.append("}"));
         return sb.toString();
-    }
-
-    private static List<Attribute> fieldToAttributes(Field[] fields, Object obj) {
-        try {
-            ArrayList<Attribute> attributes = new ArrayList<>();
-            for (Field field : fields) {
-                if (!field.accessFlags().contains(AccessFlag.STATIC)) {
-                    boolean canAccess = field.canAccess(obj);
-                    field.setAccessible(true);
-                    attributes.add(new Attribute(field.getName(), field.get(obj)));
-                    field.setAccessible(canAccess);
-                }
-            }
-            return attributes;
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            throw new RuntimeException("An error occurred.");
-        }
     }
 
     /**
@@ -126,7 +110,7 @@ public interface JSONSerialisable {
     getAttributes(T obj, Class<?> clazz, List<Attribute> list, boolean getFieldDeep) {
         if (!getFieldDeep) {
             if (clazz.equals(obj.getClass())) list.addAll(obj.jsonAttributes());
-            else list.addAll(fieldToAttributes(clazz.getDeclaredFields(), obj));
+            else list.addAll(JSONUtils.fieldToAttributes(clazz.getDeclaredFields(), obj));
             return;
         }
 
@@ -148,48 +132,55 @@ public interface JSONSerialisable {
      * @param item     the item to serialise.
      * @param sb       current string builder used in the serialisation.
      */
-    private static void serialiseItem(int currSize, Object item, StringBuilder sb, boolean indentAlways) {
-        //Recursive call
+    private static void serialiseItem(int currSize, Object item, StringBuilder sb, boolean indentAlways, boolean asString) {
+
         if (item instanceof JSONSerialisable s)
             sb.append(s.serialise(currSize + JSONUtils.INDENT_SIZE, s.ignoredFields()));
 
-            //Base cases
         else if (item == null)
-            if (indentAlways)
-                indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("null"));
-            else
-                sb.append("null");
+            handle(currSize, sb, indentAlways, "null");
+        else if (asString)
+            handle(currSize, sb, indentAlways, wrap(item.toString()));
         else if (item instanceof Number || item instanceof Boolean)
-            if (indentAlways)
-                indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append(item));
-            else
-                sb.append(item);
-        else if (item.getClass().isArray()) {
-            sb.append("[").append("\n");
-            Object[] array = (Object[]) item;
-            for (int i = 0; i < array.length; i++) {
-                serialiseItem(currSize + JSONUtils.INDENT_SIZE, array[i], sb, true);
-                if (i != array.length - 1) sb.append(",");
+            handle(currSize, sb, indentAlways, item.toString());
+        else if (item.getClass().isArray())
+            handleArray(currSize, (Object[]) item, sb);
+        else if (item instanceof Iterable<?> iterable)
+            handleIterable(currSize, sb, iterable);
+        else
+            handle(currSize, sb, indentAlways, wrap(item.toString()));
+    }
+
+    private static void handleArray(int currSize, Object[] item, StringBuilder sb) {
+        sb.append("[").append("\n");
+        Object[] array = item;
+        for (int i = 0; i < array.length; i++) {
+            serialiseItem(currSize + JSONUtils.INDENT_SIZE, array[i], sb, true, false);
+            if (i != array.length - 1) sb.append(",");
+            sb.append("\n");
+        }
+        indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("]"));
+    }
+
+    private static void handleIterable(int currSize, StringBuilder sb, Iterable<?> iterable) {
+        sb.append("[").append("\n");
+        boolean flag = false;
+        for (Object o : iterable) {
+            if (flag) {
+                sb.append(",");
                 sb.append("\n");
             }
-            indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("]"));
-        } else if (item instanceof Iterable<?> iterable) {
-            sb.append("[").append("\n");
-            boolean flag = false;
-            for (Object o : iterable) {
-                if (flag) {
-                    sb.append(",");
-                    sb.append("\n");
-                }
-                serialiseItem(currSize + JSONUtils.INDENT_SIZE, o, sb, true);
-                flag = true;
-            }
-            indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("]"));
-        } else if (indentAlways)
-            indent(sb, currSize + JSONUtils.INDENT_SIZE,
-                    s -> s.append(wrap(item.toString())));
+            serialiseItem(currSize + JSONUtils.INDENT_SIZE, o, sb, true, false);
+            flag = true;
+        }
+        indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("]"));
+    }
+
+    private static void handle(int currSize, StringBuilder sb, boolean indentAlways, String str) {
+        if (indentAlways)
+            indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append(str));
         else
-            sb.append(wrap(item.toString()));
+            sb.append(str);
     }
 
     private static void indent(StringBuilder sb, int indentSize, Consumer<StringBuilder> action) {
@@ -214,25 +205,15 @@ public interface JSONSerialisable {
     }
 
     /**
-     * By default, this interface only serialises non-inherited fields in the child class. In order to serialise
-     * inherited ones too, this method should be overridden to return true, in which case every non-static fields,
-     * including private ones, unless omitted by {@link JSONSerialisable#ignoredFields()}, will be serialised.
+     * By default, Kompakt only serialises non-inherited fields in the child class. In order to serialise
+     * inherited ones too, this method should be overridden to return true, or the class of the object being serialised
+     * should be annotated with {@link DeepSerialise}, in which case every non-static fields,
+     * including private ones, unless ignored, will be serialised.
      *
      * @return whether inherited fields should be serialised.
      */
     default boolean deepSerialise() {
-        return false;
-    }
-
-    /**
-     * By default, fields that are instances of the {@link Iterable} interface will be serialised as JSON arrays.
-     * Some examples of childrens of {@link Iterable} are {@link HashSet}, and {@link ArrayList}. If for whatever
-     * reason this feature should be disabled, override this method and return false.
-     *
-     * @return whether instances of {@link Iterable} are serialised as arrays.
-     */
-    default boolean serialiseIterablesAsArrays() {
-        return true;
+        return this.getClass().isAnnotationPresent(DeepSerialise.class);
     }
 
     /**

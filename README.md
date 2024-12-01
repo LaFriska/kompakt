@@ -84,32 +84,27 @@ will print the corresponding JSON string into the console.
 
 ### Ignoring fields
 
-In order to tell Kompakt to ignore certain fields, override `JSONSerialisable#ignoredFields()` to return
-an array of field names to ignore. Using the example above, if we wish to ignore `isHappy`,
-then we would write the class as follows
+In order to tell Kompakt to ignore certain fields, label the fields to be ignored using the annotation `@Ignored`.
+Using the example above, if we wish to ignore `isHappy`, then
 
 ```java
 import com.friska.kompakt.JSONSerialisable;
+import com.friska.kompakt.annotations.Ignored;
 
 public class Person implements JSONSerialisable {
 
-    String name;
+   String name;
 
-    int age;
+   int age;
 
-    boolean isHappy;
+   @Ignored
+   boolean isHappy;
 
-    public Person(String name, int age, boolean isHappy) {
-        this.name = name;
-        this.age = age;
-        this.isHappy = isHappy;
-    }
-
-    //Ignores the "isHappy" field.
-    @Override
-    public String[] ignoredFields() {
-        return new String[]{"isHappy"};
-    }
+   public Person(String name, int age, boolean isHappy) {
+      this.name = name;
+      this.age = age;
+      this.isHappy = isHappy;
+   }
 }
 ```
 
@@ -161,30 +156,26 @@ The resulting JSON is
 }
 ```
 
-In order to allow Kompakt to serialise inherited fields. we override
-`JSONSerialisable#deepSerialise()` and return true, as follows.
+In order to allow Kompakt to serialise inherited fields, we annotate the class of the object being serialised with
+the annotation `@DeepSerialise`.
 
 ```java
 import com.friska.kompakt.JSONSerialisable;
+import com.friska.kompakt.annotations.DeepSerialise;
 
+@DeepSerialise
 public class Student extends Person implements JSONSerialisable {
 
-    private int grades;
+   private int grades;
 
-    public Student(String name, int age, boolean isHappy, int grades) {
-        super(name, age, isHappy);
-        this.grades = grades;
-    }
-
-    //Allows inherited fields to be serialised.
-    @Override
-    public boolean deepSerialise() {
-        return true;
-    }
+   public Student(String name, int age, boolean isHappy, int grades) {
+      super(name, age, isHappy);
+      this.grades = grades;
+   }
 }
 ```
 
-Now, the resulting JSON is
+Now, the resulting JSON contains all fields.
 
 ```json
 {
@@ -293,11 +284,10 @@ clumsy manner. However, with the override, the resulting JSON is
 
 ### Other features
 
-Some less important yet notable features
+Some less important yet notable features for serialisation:
 
-1. `JSONSerialisable#serialiseIterablesAsArrays()`, which by default is set to
-   true, it serialises any fields inheriting Java's `Iterable` class into a JSON
-   array. To disable this feature, as usual, override it and return false.
+1. Annotating a field with `@SerialiseAsString` will force Kompakt to serialise the field as a string by calling
+`toString()` on the given object. 
 2. `JSONSerialisable#setIndentSize(int)`, which globally sets the size of an indentation
    in a serialised JSON string.
 
