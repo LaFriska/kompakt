@@ -1,6 +1,7 @@
 package com.friska.kompakt;
 
 import com.friska.kompakt.annotations.Ignored;
+import com.friska.kompakt.annotations.SerialiseAsString;
 
 import java.lang.reflect.AccessFlag;
 import java.lang.reflect.Field;
@@ -81,8 +82,9 @@ public class JSONUtils {
             for (Field field : fields) {
                 if (!field.accessFlags().contains(AccessFlag.STATIC) && !field.isAnnotationPresent(Ignored.class)) {
                     boolean canAccess = field.canAccess(obj);
+                    boolean asString = field.isAnnotationPresent(SerialiseAsString.class);
                     field.setAccessible(true);
-                    attributes.add(new Attribute(field.getName(), field.get(obj)));
+                    attributes.add(new Attribute(field.getName(), field.get(obj), asString));
                     field.setAccessible(canAccess);
                 }
             }

@@ -2,6 +2,7 @@ package com.friska.kompakt;
 
 import com.friska.kompakt.annotations.DeepSerialise;
 import com.friska.kompakt.annotations.Ignored;
+import com.friska.kompakt.annotations.SerialiseAsString;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,6 +25,10 @@ import java.util.function.Consumer;
  *     <li>
  *         Custom JSON attributes - to serialise the class into a custom set of attributes, override
  *         {@link JSONSerialisable#jsonAttributes()}.
+ *     </li>
+ *     <li>
+ *         Serialising an object by its toString value - this configuration may occasionally be useful, simply annotate
+ *         a field with {@link SerialiseAsString}.
  *     </li>
  *     <li>
  *         Custom indent sizes - to customise the JSON indent size, call the static setter
@@ -78,7 +83,7 @@ public interface JSONSerialisable {
             Object val = attribute.val();
             if (!omitted.contains(name)) {
                 indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append(wrap(name)).append(": "));
-                serialiseItem(currSize, val, sb, false);
+                serialiseItem(currSize, val, sb, false, attribute.serialiseAsString());
                 sb.append(",").append("\n");
             }
         }
@@ -127,13 +132,15 @@ public interface JSONSerialisable {
      * @param item     the item to serialise.
      * @param sb       current string builder used in the serialisation.
      */
-    private static void serialiseItem(int currSize, Object item, StringBuilder sb, boolean indentAlways) {
+    private static void serialiseItem(int currSize, Object item, StringBuilder sb, boolean indentAlways, boolean asString) {
 
         if (item instanceof JSONSerialisable s)
             sb.append(s.serialise(currSize + JSONUtils.INDENT_SIZE, s.ignoredFields()));
 
         else if (item == null)
             handle(currSize, sb, indentAlways, "null");
+        else if (asString)
+            handle(currSize, sb, indentAlways, wrap(item.toString()));
         else if (item instanceof Number || item instanceof Boolean)
             handle(currSize, sb, indentAlways, item.toString());
         else if (item.getClass().isArray())
@@ -148,7 +155,7 @@ public interface JSONSerialisable {
         sb.append("[").append("\n");
         Object[] array = item;
         for (int i = 0; i < array.length; i++) {
-            serialiseItem(currSize + JSONUtils.INDENT_SIZE, array[i], sb, true);
+            serialiseItem(currSize + JSONUtils.INDENT_SIZE, array[i], sb, true, false);
             if (i != array.length - 1) sb.append(",");
             sb.append("\n");
         }
@@ -163,7 +170,7 @@ public interface JSONSerialisable {
                 sb.append(",");
                 sb.append("\n");
             }
-            serialiseItem(currSize + JSONUtils.INDENT_SIZE, o, sb, true);
+            serialiseItem(currSize + JSONUtils.INDENT_SIZE, o, sb, true, false);
             flag = true;
         }
         indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("]"));
