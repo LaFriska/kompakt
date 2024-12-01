@@ -1,9 +1,11 @@
 import com.friska.kompakt.JSONSerialisable;
 import com.friska.kompakt.annotations.DeepSerialise;
 import com.friska.kompakt.annotations.Ignored;
+import com.friska.kompakt.annotations.SerialiseAsString;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
 
@@ -73,6 +75,77 @@ public class AnnotationsTest {
 
         Child(String name, int age, float height) {
             super(name, age, height);
+        }
+    }
+
+    /**
+     * Tests {@link SerialiseAsString}.
+     */
+    @Test
+    public void testSerialiseAsString(){
+
+        class Stuff implements JSONSerialisable{
+
+            @SerialiseAsString
+            ArrayList<Name> f1 = new ArrayList<>();
+
+            HashSet<Object> f2 = new HashSet<>();
+
+            @SerialiseAsString
+            boolean f3 = true;
+
+            @SerialiseAsString
+            int f4 = 35;
+
+            Name[] f5 = new Name[]{
+                    new Name("John", "Doe"),
+                    new Name("Foo", "Bar")
+            };
+
+            @SerialiseAsString
+            Object f6 = null;
+            Object f7 = null;
+
+            Stuff(){
+                f1.add(new Name("John", "Doe"));
+                f1.add(new Name("Foo", "Bar"));
+                f2.add("Hello World");
+            }
+        }
+
+        testClean("""
+                {
+                  "f1": "[John Doe, Foo Bar]",
+                  "f2": ["Hello World"],
+                  "f3": "true",
+                  "f4": "35",
+                  "f5": [
+                    "John Doe",
+                    "Foo Bar"
+                  ],
+                  "f6": null,
+                  "f7": null
+                }
+                """, new Stuff());
+        testClean(
+                """
+                        {
+                          "f1": "3.14",
+                          "f2": "false"
+                        }
+                        """,
+                new RecordStuff(3.14F, false)
+        );
+    }
+
+    record RecordStuff(@SerialiseAsString float f1,
+                       @SerialiseAsString boolean f2
+    ) implements JSONSerialisable{}
+
+    record Name(String fName, String lName){
+        @Override
+        public String toString() {
+            return fName + " " + lName;
         }
     }
 
