@@ -128,47 +128,52 @@ public interface JSONSerialisable {
      * @param sb       current string builder used in the serialisation.
      */
     private static void serialiseItem(int currSize, Object item, StringBuilder sb, boolean indentAlways) {
-        //Recursive call
+
         if (item instanceof JSONSerialisable s)
             sb.append(s.serialise(currSize + JSONUtils.INDENT_SIZE, s.ignoredFields()));
 
-            //Base cases
         else if (item == null)
-            if (indentAlways)
-                indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("null"));
-            else
-                sb.append("null");
+            handle(currSize, sb, indentAlways, "null");
         else if (item instanceof Number || item instanceof Boolean)
-            if (indentAlways)
-                indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append(item));
-            else
-                sb.append(item);
-        else if (item.getClass().isArray()) {
-            sb.append("[").append("\n");
-            Object[] array = (Object[]) item;
-            for (int i = 0; i < array.length; i++) {
-                serialiseItem(currSize + JSONUtils.INDENT_SIZE, array[i], sb, true);
-                if (i != array.length - 1) sb.append(",");
+            handle(currSize, sb, indentAlways, item.toString());
+        else if (item.getClass().isArray())
+            handleArray(currSize, (Object[]) item, sb);
+        else if (item instanceof Iterable<?> iterable)
+            handleIterable(currSize, sb, iterable);
+        else
+            handle(currSize, sb, indentAlways, wrap(item.toString()));
+    }
+
+    private static void handleArray(int currSize, Object[] item, StringBuilder sb) {
+        sb.append("[").append("\n");
+        Object[] array = item;
+        for (int i = 0; i < array.length; i++) {
+            serialiseItem(currSize + JSONUtils.INDENT_SIZE, array[i], sb, true);
+            if (i != array.length - 1) sb.append(",");
+            sb.append("\n");
+        }
+        indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("]"));
+    }
+
+    private static void handleIterable(int currSize, StringBuilder sb, Iterable<?> iterable) {
+        sb.append("[").append("\n");
+        boolean flag = false;
+        for (Object o : iterable) {
+            if (flag) {
+                sb.append(",");
                 sb.append("\n");
             }
-            indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("]"));
-        } else if (item instanceof Iterable<?> iterable) {
-            sb.append("[").append("\n");
-            boolean flag = false;
-            for (Object o : iterable) {
-                if (flag) {
-                    sb.append(",");
-                    sb.append("\n");
-                }
-                serialiseItem(currSize + JSONUtils.INDENT_SIZE, o, sb, true);
-                flag = true;
-            }
-            indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("]"));
-        } else if (indentAlways)
-            indent(sb, currSize + JSONUtils.INDENT_SIZE,
-                    s -> s.append(wrap(item.toString())));
+            serialiseItem(currSize + JSONUtils.INDENT_SIZE, o, sb, true);
+            flag = true;
+        }
+        indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append("]"));
+    }
+
+    private static void handle(int currSize, StringBuilder sb, boolean indentAlways, String str) {
+        if (indentAlways)
+            indent(sb, currSize + JSONUtils.INDENT_SIZE, s -> s.append(str));
         else
-            sb.append(wrap(item.toString()));
+            sb.append(str);
     }
 
     private static void indent(StringBuilder sb, int indentSize, Consumer<StringBuilder> action) {
