@@ -3,15 +3,22 @@ import com.friska.kompakt.annotations.DeepSerialise;
 import com.friska.kompakt.annotations.Ignored;
 import org.junit.Test;
 
+import java.util.ArrayList;
+
 import static org.junit.Assert.assertEquals;
 
 /**
- * This is a simple test-class that tests the {@link Ignored} annotation.
+ * This is a simple test-class that tests various annotation. Since the functionality of these annotations depends
+ * on methods in {@link JSONSerialisable}, this class does not extensively tests the functionality, but rather, ensures
+ * that the annotations work.
  */
-public class IgnoredTest {
+public class AnnotationsTest {
 
+    /**
+     * Tests {@link Ignored}.
+     */
     @Test
-    public void test(){
+    public void testIgnore(){
         Person1 p = new Person1("Peter", 32, 180);
         testClean("""
                 {
