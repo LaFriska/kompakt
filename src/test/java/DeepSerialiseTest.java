@@ -1,4 +1,5 @@
 import com.friska.kompakt.JSONSerialisable;
+import com.friska.kompakt.annotations.DeepSerialise;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -6,8 +7,9 @@ import java.util.HashSet;
 import static org.junit.Assert.assertEquals;
 
 /**
- * This class tests JSON serialisation for when {@link JSONSerialisable#deepSerialise()} is enabled. (Overidden to
- * return true.)
+ * This class tests JSON serialisation for when {@link JSONSerialisable#deepSerialise()} is enabled. Some test classes
+ * defined here either overrides {@link JSONSerialisable#deepSerialise()} to return true, or uses {@link DeepSerialise},
+ * testing both ways of configuring deep serialisation.
  */
 public class DeepSerialiseTest {
 
@@ -27,17 +29,14 @@ public class DeepSerialiseTest {
                 return true;
             }
         }
+
+        @DeepSerialise
         class EmptyClassStatic implements JSONSerialisable {
 
             public static final float PI = 3.14F;
 
             public void funny(){
                 System.out.println("hi");
-            }
-
-            @Override
-            public boolean deepSerialise() {
-                return true;
             }
         }
 
@@ -193,11 +192,8 @@ public class DeepSerialiseTest {
 
     //-------------------------------------CLASSES------------------------------------------
 
+    @DeepSerialise
     record Person(String name, int age, boolean isDead) implements JSONSerialisable{
-        @Override
-        public boolean deepSerialise() {
-            return true;
-        }
     }
 
     static class Animal {
@@ -214,6 +210,7 @@ public class DeepSerialiseTest {
         }
     }
 
+    @DeepSerialise
     static class Mammal extends Animal implements JSONSerialisable{
 
         static int MAMMALS_AVAILABLE = 23;
@@ -226,11 +223,6 @@ public class DeepSerialiseTest {
             super(name, age, species);
             this.sex = sex;
             this.walkingSpeed = walkingSpeed;
-        }
-
-        @Override
-        public boolean deepSerialise() {
-            return true;
         }
     }
 

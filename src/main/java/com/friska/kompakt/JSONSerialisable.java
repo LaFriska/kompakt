@@ -1,5 +1,7 @@
 package com.friska.kompakt;
 
+import com.friska.kompakt.annotations.DeepSerialise;
+
 import java.lang.reflect.AccessFlag;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -11,8 +13,9 @@ import java.util.function.Consumer;
 /**
  * Classes implementing this interface allows Kompakt to search through field variables and serialise them into a
  * JSON string. This process is done by calling {@link JSONSerialisable#serialise()}. There are configurations available
- * in the form of trivial methods with a default return value, but should be overridden if such configurations should
- * be modified. Below are such configurations. (Read their documentation for more detail.)
+ * in the form of methods with a default return value, but should be overridden if such configurations should
+ * be modified. Some of these configurations also offers alternative settings in the form of annotations.
+ * Below are such configurations. (Read their documentation for more detail.)
  * <ul>
  *     <li>
  *         {@link JSONSerialisable#ignoredFields()}, returns an array of field names that should be ignored from
@@ -20,6 +23,7 @@ import java.util.function.Consumer;
  *     </li>
  *     <li>
  *         {@link JSONSerialisable#deepSerialise()}, returns whether fields from super classes should be serialised.
+ *         Annotating the target class with {@link DeepSerialise} will set this method to true.
  *     </li>
  *     <li>
  *         {@link JSONSerialisable#serialiseIterablesAsArrays()}, returns whether fields that inherit {@link Iterable}
@@ -214,14 +218,15 @@ public interface JSONSerialisable {
     }
 
     /**
-     * By default, this interface only serialises non-inherited fields in the child class. In order to serialise
-     * inherited ones too, this method should be overridden to return true, in which case every non-static fields,
-     * including private ones, unless omitted by {@link JSONSerialisable#ignoredFields()}, will be serialised.
+     * By default, Kompakt only serialises non-inherited fields in the child class. In order to serialise
+     * inherited ones too, this method should be overridden to return true, or the class of the object being serialised
+     * should be annotated with {@link DeepSerialise}, in which case every non-static fields,
+     * including private ones, unless ignored, will be serialised.
      *
      * @return whether inherited fields should be serialised.
      */
     default boolean deepSerialise() {
-        return false;
+        return this.getClass().isAnnotationPresent(DeepSerialise.class);
     }
 
     /**
